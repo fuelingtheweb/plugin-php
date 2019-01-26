@@ -154,3 +154,164 @@ echo 'This ' .
 
 if ($someReallyReallyReallyLongBooleanVariableWithRddllyReallyLongName || []) {}
 if ($someReallyReallyReallyLongBooleanVariableWithReallyReallyReallyReallyReallyReallyLongName || []) {}
+
+$accelerator =
+    (
+        extension_loaded('eaccelerator') && ini_get('eaccelerator.enable')
+    ) ||
+    (
+        extension_loaded('apc') &&
+        ini_get('apc.enabled')
+    ) ||
+    (
+        extension_loaded('Zend Optimizer+')
+        && ini_get('zend_optimizerplus.enable')
+    ) ||
+    (
+        extension_loaded('Zend OPcache')
+        &&
+        ini_get('opcache.enable')
+    ) ||
+    (extension_loaded('xcache') && ini_get('xcache.cacher')) ||
+    (
+        extension_loaded(
+
+            'wincache'
+
+        )
+
+        &&
+
+        ini_get(
+
+            'wincache.ocenabled'
+
+        )
+    );
+
+~($a || $b);
+~($someReallyReallyReallyLongBooleanVariable || $someOtherReallyReallyReallyLongBooleanVariable);
+
+($a || $b).foo;
+($someReallyReallyReallyLongBooleanVariable || $someOtherReallyReallyReallyLongBooleanVariable)->foo;
+
+($a || $b).foo();
+($someReallyReallyReallyLongBooleanVariable || $someOtherReallyReallyReallyLongBooleanVariable)->foo();
+
+($a || $b)::foo();
+($someReallyReallyReallyLongBooleanVariable || $someOtherReallyReallyReallyLongBooleanVariable)::foo();
+
+($a || $b)['string'];
+($someReallyReallyReallyLongBooleanVariable || $someReallyReallyReallyLongBooleanVariable)['string'];
+
+$var = call($var > $var ? true : false);
+$var = call($someOtherReallyReallyLongVariable > $var ? true : false);
+$var = call($var > $someOtherReallyReallyLongVariable ? true : false);
+$var = call($someOtherReallyReallyLongVariable > $someOtherReallyReallyLongVariable ? true : false);
+$var = call($someOtherReallyReallyReallyReallyReallyReallyLongVariable > $someOtherReallyReallyReallyReallyReallyReallyLongVariable ? true : false);
+
+return $var > $var ? true : false;
+return $someOtherReallyReallyLongVariable > $var ? true : false;
+return $var > $someOtherReallyReallyLongVariable ? true : false;
+return $someOtherReallyReallyLongVariable > $someOtherReallyReallyLongVariable ? true : false;
+return $someOtherReallyReallyReallyReallyReallyReallyLongVariable > $someOtherReallyReallyReallyReallyReallyReallyLongVariable ? true : false;
+
+fn(
+    $bifornCringerMoshedPerplexSawder,
+    $askTrovenaBeenaDependsRowans,
+    $glimseGlyphsHazardNoopsTieTie === averredBathersBoxroomBuggyNurl &&
+    $anodyneCondosMalateOverateRetinol
+        ? $annularCooeedSplicesWalksWayWay
+        : $kochabCooieGameOnOboleUnweave
+);
+
+$var = $a ?? $b;
+$var = $a ?? $b ?? $c;
+$var = $a ?? $b ?? $c ?? $d;
+$var = $a ?? $b ?? $c ?? $d ?? call($a, $b, $c);
+$var = $a ?? $b ?? $c ?? $d ?? $var ? 1 : 2;
+$var = $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable;
+$var = $someOtherReallyReallyReallyLongVariable ?? $someOtherReallyReallyReallyLongVariable;
+$var = $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable;
+$var = $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable;
+$var = $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?? call($someOtherReallyReallyLongVariable, $someOtherReallyReallyLongVariable, $someOtherReallyReallyLongVariable);
+$var = $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ? $someOtherReallyReallyLongVariable : $someOtherReallyReallyLongVariable;
+$var = $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?? $someOtherReallyReallyLongVariable ?: $someOtherReallyReallyLongVariable;
+
+$var = $var instanceof Arrayable ? $var : $var;
+$var = $someOtherReallyReallyReallyLongVariable instanceof Arrayable ? $var : $var;
+$var = $someOtherReallyReallyReallyReallyLongVariable instanceof Arrayable ? $var : $var;
+$var = $var instanceof Arrayable ? $someOtherReallyReallyReallyLongVariable : $var;
+$var = $var instanceof Arrayable ? $someOtherReallyReallyReallyReallyLongVariable : $var;
+$var = $var instanceof Arrayable ? $var : $someOtherReallyReallyReallyLongVariable;
+$var = $var instanceof Arrayable ? $var : $someOtherReallyReallyReallyReallyLongVariable;
+$var = $someOtherReallyReallyReallyLongVariable instanceof Arrayable ? $someOtherReallyReallyReallyLongVariable : $someOtherReallyReallyReallyLongVariable;
+
+$callback =
+    $var ??
+    function () {
+        return true;
+    };
+$callback =
+    $var ??
+    function () {
+        return true;
+    } ??
+    function () {
+        return true;
+    };
+$regex =
+    '/
+    (\\\\)?                    # escaped with a backslash?
+    \$
+    (?!\()                     # no opening parenthesis
+    (\{)?                      # optional brace
+    (' .
+    self::VARNAME_REGEX .
+    ')  # var name
+    (\})?                      # optional closing brace
+/x';
+$var = '
+string
+string
+string
+' . '
+string
+string
+string
+';
+
+$var = $var . '
+string
+';
+
+$var = '
+string
+' . $var;
+
+$var = '
+string\n
+string\n
+string\n
+' . '
+string\r\n
+string\r\n
+string\r\n
+';
+
+$var = '
+string\\n
+string\\n
+string\\n
+' . '
+string\\r\\n
+string\\r\\n
+string\\r\\n
+';
+
+$var = __DIR__ instanceof \Exception;
+$var = 'string' instanceof \Exception;
+$var = "string" instanceof \Exception;
+$var = 2244 instanceof \Exception;
+$var = true instanceof \Exception;
+$var = 100 + 1 instanceof \Exception;

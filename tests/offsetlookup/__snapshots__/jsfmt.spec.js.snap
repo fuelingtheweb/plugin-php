@@ -1,6 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`offsetlookup.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 
 $variable['data']['title'] = html_entity_decode(wp_get_document_title());
@@ -12,7 +17,14 @@ $variable['veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryV
 $variable = get_taxonomy_function(get_queried_object_function()->taxonomy)->object_type[0];
 $someArray[] = $this->something->long->that->not->makes->it->break->onto->two->break->lines();
 $variable = "abcdef"[-2];
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+$variable[1];
+$variable[11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111];
+$variable['string'];
+$variable['veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongString'];
+$variable['veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongString']['veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongString'];
+
+=====================================output=====================================
 <?php
 
 $variable['data']['title'] = html_entity_decode(wp_get_document_title());
@@ -41,13 +53,33 @@ $variable = get_taxonomy_function(get_queried_object_function()->taxonomy)
 $someArray[] = $this->something->long->that->not->makes->it->break->onto->two->break->lines();
 $variable = "abcdef"[-2];
 
+$variable[1];
+$variable[11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111];
+$variable['string'];
+$variable[
+    'veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongString'
+];
+$variable[
+    'veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongString'
+][
+    'veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongString'
+];
+
+================================================================================
 `;
 
 exports[`single.php 1`] = `
-<?php
-$arr[1];
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 $arr[1];
 
+=====================================output=====================================
+<?php
+$arr[1];
+
+================================================================================
 `;

@@ -1,6 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`errors.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 try {
     throw new OtherException();
@@ -31,7 +36,26 @@ try {
 throw new VeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongClassException('exception');
 throw $e;
 throw new \\Exception('Bad logic in order cancel');
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+try {} catch (Exception $e) {} finally {}
+
+try {
+
+} catch (Exception $e) {
+
+} finally {
+
+}
+
+try {
+    // Comment
+} catch (Exception $e) {
+    // Comment
+} finally {
+    // Comment
+}
+
+=====================================output=====================================
 <?php
 try {
     throw new OtherException();
@@ -65,4 +89,23 @@ throw new VeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongClassException(
 throw $e;
 throw new \\Exception('Bad logic in order cancel');
 
+try {
+} catch (Exception $e) {
+} finally {
+}
+
+try {
+} catch (Exception $e) {
+} finally {
+}
+
+try {
+    // Comment
+} catch (Exception $e) {
+    // Comment
+} finally {
+    // Comment
+}
+
+================================================================================
 `;

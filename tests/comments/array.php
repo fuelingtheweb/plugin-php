@@ -53,3 +53,40 @@ $array = []; // Comment
 /* Comment */
 $array /* Comment */ = /* Comment */ []; /* Comment */
 /* Comment */
+
+$array = [
+    'key' =>
+        // Comment A
+        // Comment B
+        'string'
+];
+
+$array = [
+     'key' => // Comment A
+        // Comment B
+         'string'
+];
+
+$array = [
+    'key' => // Comment A
+        'string'
+];
+
+array // Comment
+();
+
+$array = array // Comment
+();
+
+$array = array // Comment
+('string', 'other-string');
+
+call(
+    array // Comment
+    ()
+);
+
+call(
+    array // Comment
+    ('string', 'other-string')
+);

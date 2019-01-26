@@ -1,0 +1,853 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`argument-list.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+<?php
+
+longArgNamesWithComments(
+
+  // Hello World
+
+  $longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglong1,
+
+  // Hello World
+
+  $longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglong2,
+
+  /* Hello World */
+  $longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglong3
+
+
+);
+
+shortArgNames(
+
+
+  $short,
+
+  $short2,
+  $short3
+);
+
+comments(
+
+  // Comment
+
+  /* Some comments */
+  $short,
+  /* Another comment */
+
+
+  $short2, // Even more comments
+
+
+  /* Another comment */
+
+
+  // Long Long Long Long Long Comment
+
+
+
+  /* Long Long Long Long Long Comment */
+  // Long Long Long Long Long Comment
+
+  $short3
+  // More comments
+
+
+);
+
+differentArgTypes(
+
+  function () {
+    return true;
+  },
+
+  isTrue ?
+    doSomething() : 12
+
+);
+
+moreArgTypes(
+
+  [1, 2,
+    3],
+
+  [
+    'name' => 'Hello World',
+    'age' => 29
+  ],
+
+  doSomething(
+
+    // Hello world
+
+
+    // Hello world again
+    [ 'name' => 'Hello World', 'age' => 34 ],
+
+
+    $oneThing
+      + $anotherThing
+
+    // Comment
+
+  )
+
+);
+
+evenMoreArgTypes(
+  doSomething(
+    [ 'name' => 'Hello World', 'age' => 34 ],
+
+
+    true
+
+  ),
+
+  14,
+
+  1 + 2
+    - 90/80,
+
+  !98 *
+    60 -
+    90
+
+
+
+);
+
+$foo->apply(null,
+
+// Array here
+[1, 2]);
+
+
+$bar->on("readable",
+
+function () {
+  doStuff();
+});
+
+foo(['A, B'],
+
+/* function here */
+function () { return true; });
+
+$doSomething->apply(null,
+
+// Comment
+
+[
+  'Hello world 1',
+  'Hello world 2',
+  'Hello world 3',
+]);
+
+
+doAnotherThing("node",
+
+[
+  $solution_type,
+  $time_frame
+]);
+
+$stuff->doThing($someStuff,
+
+  -1, [
+  'accept' => function($node) { doSomething($node); }
+]);
+
+doThing(
+
+  $someOtherStuff,
+
+  // This is important
+  true, [
+  'decline' => function ($creditCard) { takeMoney($creditCard); }
+]
+
+);
+
+func(
+  function () {
+   thing();
+  },
+
+  [ 'yes' => true, 'no' => 5 ]
+);
+
+doSomething(
+
+   [ 'tomorrow' => $maybe, 'today' => $never[$always] ],
+
+   1337,
+
+   /* Comment */
+
+   // This is important
+   [ $helloWorld, $someImportantStuff ]
+
+
+);
+
+=====================================output=====================================
+<?php
+
+longArgNamesWithComments(
+    // Hello World
+
+    $longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglong1,
+
+    // Hello World
+
+    $longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglong2,
+
+    /* Hello World */
+    $longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglong3
+);
+
+shortArgNames(
+    $short,
+
+    $short2,
+    $short3
+);
+
+comments(
+    // Comment
+
+    /* Some comments */
+    $short,
+    /* Another comment */
+
+    $short2, // Even more comments
+
+    /* Another comment */
+
+    // Long Long Long Long Long Comment
+
+    /* Long Long Long Long Long Comment */
+    // Long Long Long Long Long Comment
+
+    $short3
+    // More comments
+);
+
+differentArgTypes(
+    function () {
+        return true;
+    },
+
+    isTrue ? doSomething() : 12
+);
+
+moreArgTypes(
+    [1, 2, 3],
+
+    [
+        'name' => 'Hello World',
+        'age' => 29
+    ],
+
+    doSomething(
+        // Hello world
+
+        // Hello world again
+        ['name' => 'Hello World', 'age' => 34],
+
+        $oneThing + $anotherThing
+
+        // Comment
+    )
+);
+
+evenMoreArgTypes(
+    doSomething(
+        ['name' => 'Hello World', 'age' => 34],
+
+        true
+    ),
+
+    14,
+
+    1 + 2 - 90 / 80,
+
+    !98 * 60 - 90
+);
+
+$foo->apply(
+    null,
+
+    // Array here
+    [1, 2]
+);
+
+$bar->on(
+    "readable",
+
+    function () {
+        doStuff();
+    }
+);
+
+foo(
+    ['A, B'],
+
+    /* function here */
+    function () {
+        return true;
+    }
+);
+
+$doSomething->apply(
+    null,
+
+    // Comment
+
+    ['Hello world 1', 'Hello world 2', 'Hello world 3']
+);
+
+doAnotherThing(
+    "node",
+
+    [$solution_type, $time_frame]
+);
+
+$stuff->doThing(
+    $someStuff,
+
+    -1,
+    [
+        'accept' => function ($node) {
+            doSomething($node);
+        }
+    ]
+);
+
+doThing(
+    $someOtherStuff,
+
+    // This is important
+    true,
+    [
+        'decline' => function ($creditCard) {
+            takeMoney($creditCard);
+        }
+    ]
+);
+
+func(
+    function () {
+        thing();
+    },
+
+    ['yes' => true, 'no' => 5]
+);
+
+doSomething(
+    ['tomorrow' => $maybe, 'today' => $never[$always]],
+
+    1337,
+
+    /* Comment */
+
+    // This is important
+    [$helloWorld, $someImportantStuff]
+);
+
+================================================================================
+`;
+
+exports[`class.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+<?php
+
+class Foo
+{
+
+
+    // property declaration
+    public $var = 'a default value';
+    public $var_1 = 'a default value';
+
+
+    public $var_2 = 'a default value';
+
+    // method declaration
+    public function displayVar() {
+        echo $this->var;
+    }
+    public function displayVar1() {
+        echo $this->var_1;
+    }
+
+
+    public function displayVar2() {
+        echo $this->var_2;
+    }
+
+    const CONSTANT = 'constant value';
+    const CONSTANT_1 = 'constant value';
+
+
+    const CONSTANT_2 = 'constant value';
+
+    // Comment
+
+
+    // Comment
+    public function __sleep()
+    {
+        return array('dsn', 'username', 'password');
+    }
+    // Comment
+
+
+    // Comment
+    private $dsn;
+    // Comment
+
+
+}
+
+=====================================output=====================================
+<?php
+
+class Foo
+{
+    // property declaration
+    public $var = 'a default value';
+    public $var_1 = 'a default value';
+
+    public $var_2 = 'a default value';
+
+    // method declaration
+    public function displayVar()
+    {
+        echo $this->var;
+    }
+    public function displayVar1()
+    {
+        echo $this->var_1;
+    }
+
+    public function displayVar2()
+    {
+        echo $this->var_2;
+    }
+
+    const CONSTANT = 'constant value';
+    const CONSTANT_1 = 'constant value';
+
+    const CONSTANT_2 = 'constant value';
+
+    // Comment
+
+    // Comment
+    public function __sleep()
+    {
+        return array('dsn', 'username', 'password');
+    }
+    // Comment
+
+    // Comment
+    private $dsn;
+    // Comment
+}
+
+================================================================================
+`;
+
+exports[`comments.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+<?php
+
+function a() {
+  $a = 5; // comment
+
+  return $a;
+}
+
+function a() {
+  $a = 5; /* comment */
+
+  return $a;
+}
+
+function a() {
+  $a = 5; /* comment */ /* comment */
+
+  return $a;
+}
+
+function a() {
+  $a = 5; /* comment */ /* comment */ // comment
+  return $a;
+}
+
+function a() {
+  $a = 5; /* comment */ /* comment */ // comment
+
+  return $a;
+}
+
+=====================================output=====================================
+<?php
+
+function a()
+{
+    $a = 5; // comment
+
+    return $a;
+}
+
+function a()
+{
+    $a = 5; /* comment */
+
+    return $a;
+}
+
+function a()
+{
+    $a = 5; /* comment */ /* comment */
+
+    return $a;
+}
+
+function a()
+{
+    $a = 5; /* comment */ /* comment */ // comment
+    return $a;
+}
+
+function a()
+{
+    $a = 5; /* comment */ /* comment */ // comment
+
+    return $a;
+}
+
+================================================================================
+`;
+
+exports[`member-chain.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+<?php
+
+$fooBar->doSomething('Hello World')->doAnotherThing('Foo', [ 'foo' => $bar ])
+
+  // App configuration.
+  ->doOneMoreThing($config)
+
+  ->run(function () { $console->log('Bar'); });
+
+$bigDeal
+
+  ->doSomething('Hello World')
+
+  // Hello world
+  ->doAnotherThing('Foo', [ 'foo' => $bar ])
+
+  // App configuration.
+  ->doOneMoreThing($config)
+
+  ->run(function () { $console->log('Bar'); });
+
+
+$foo->bar->baz
+
+  ->doSomething('Hello World')
+
+  // Hello world
+  ->foo->bar->doAnotherThing('Foo', [ 'foo' => $bar ])
+
+  ->doOneMoreThing($config)
+  ->bar->run(function () { $console->log('Bar'); });
+
+(
+  $somethingGood ? $thisIsIt : $maybeNot
+)
+
+  // Hello world
+  ->doSomething('Hello World')
+
+  ->doAnotherThing('Foo', [ 'foo' => $bar ]) // Run this
+  ->run(function () { $console->log('Bar'); }); // Do this
+
+$helloWorld
+
+  ->text()
+
+  ->then(function ($t) { return $t; });
+
+($veryLongVeryLongVeryLong ||
+ $anotherVeryLongVeryLongVeryLong ||
+ $veryVeryVeryLongError
+)
+
+  ->map(function ($tickets) { $TicketRecord->createFromSomeLongString(); })
+
+  ->filter(function ($obj) { return !!$obj; });
+
+$sel = $this->connections
+
+  ->concat($this->activities->concat($this->operators))
+  ->filter(function ($x) { return $x->selected; });
+
+=====================================output=====================================
+<?php
+
+$fooBar
+    ->doSomething('Hello World')
+    ->doAnotherThing('Foo', ['foo' => $bar])
+
+    // App configuration.
+    ->doOneMoreThing($config)
+
+    ->run(function () {
+        $console->log('Bar');
+    });
+
+$bigDeal
+
+    ->doSomething('Hello World')
+
+    // Hello world
+    ->doAnotherThing('Foo', ['foo' => $bar])
+
+    // App configuration.
+    ->doOneMoreThing($config)
+
+    ->run(function () {
+        $console->log('Bar');
+    });
+
+$foo->bar->baz
+
+    ->doSomething('Hello World')
+
+    // Hello world
+    ->foo->bar->doAnotherThing('Foo', ['foo' => $bar])
+
+    ->doOneMoreThing($config)
+    ->bar->run(function () {
+        $console->log('Bar');
+    });
+
+($somethingGood ? $thisIsIt : $maybeNot)
+
+    // Hello world
+    ->doSomething('Hello World')
+
+    ->doAnotherThing('Foo', ['foo' => $bar]) // Run this
+    ->run(function () {
+        $console->log('Bar');
+    }); // Do this
+
+$helloWorld
+
+    ->text()
+
+    ->then(function ($t) {
+        return $t;
+    });
+
+(
+    $veryLongVeryLongVeryLong ||
+    $anotherVeryLongVeryLongVeryLong ||
+    $veryVeryVeryLongError
+)
+
+    ->map(function ($tickets) {
+        $TicketRecord->createFromSomeLongString();
+    })
+
+    ->filter(function ($obj) {
+        return !!$obj;
+    });
+
+$sel = $this->connections
+
+    ->concat($this->activities->concat($this->operators))
+    ->filter(function ($x) {
+        return $x->selected;
+    });
+
+================================================================================
+`;
+
+exports[`open-php-tag.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+<?php
+
+$a = 1;
+
+=====================================output=====================================
+<?php
+
+$a = 1;
+
+================================================================================
+`;
+
+exports[`open-php-tag-1.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+<?php
+$a = 1;
+
+=====================================output=====================================
+<?php
+$a = 1;
+
+================================================================================
+`;
+
+exports[`traituse.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+<?php
+
+class Aliased_Talker {
+
+
+    use A, B {
+
+
+        B::smallTalk insteadof A;
+
+
+        A::bigTalk insteadof B;
+
+        B::smallTalk insteadof A;
+        A::bigTalk insteadof B;
+
+        B::bigTalk as talk;
+
+        // Comment
+        B::smallTalk insteadof A;
+
+        // Comment
+        B::smallTalk insteadof A; // Comment
+        // Comment
+
+        // Comment
+
+        B::smallTalk insteadof A;
+
+
+    }
+
+    use C {
+        C::smallTalk insteadof A;
+    }
+
+    use D {
+        // Comment
+        D::smallTalk insteadof A;
+        // Comment
+    }
+
+
+
+    use D {
+
+
+    }
+
+    use E {
+
+        E::smallTalk insteadof A;
+
+    }
+
+    use F {
+        // Comment
+        F::smallTalk insteadof A;
+        // Comment
+    }
+
+
+}
+
+=====================================output=====================================
+<?php
+
+class Aliased_Talker
+{
+    use A, B {
+        B::smallTalk insteadof A;
+
+        A::bigTalk insteadof B;
+
+        B::smallTalk insteadof A;
+        A::bigTalk insteadof B;
+
+        B::bigTalk as talk;
+
+        // Comment
+        B::smallTalk insteadof A;
+
+        // Comment
+        B::smallTalk insteadof A; // Comment
+        // Comment
+
+        // Comment
+
+        B::smallTalk insteadof A;
+    }
+
+    use C {
+        C::smallTalk insteadof A;
+    }
+
+    use D {
+        // Comment
+        D::smallTalk insteadof A;
+        // Comment
+    }
+
+    use D {}
+
+    use E {
+        E::smallTalk insteadof A;
+    }
+
+    use F {
+        // Comment
+        F::smallTalk insteadof A;
+        // Comment
+    }
+}
+
+================================================================================
+`;

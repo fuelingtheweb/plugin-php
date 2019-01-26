@@ -1,6 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`kitchen_sink.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 
 function hello($input){
@@ -45,7 +50,8 @@ $this->test(function ($a, $b) {
     }
   }
 });
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=====================================output=====================================
 <?php
 
 function hello($input)
@@ -56,9 +62,9 @@ function hello($input)
 $i = 0;
 if ($test == 1) {
     switch ($test) {
-        case ($test == 1):
+        case $test == 1:
             $i = 2;
-        case ($test == 2):
+        case $test == 2:
             $i = 3;
         default:
             $i = 1;
@@ -101,4 +107,5 @@ $this->test(function ($a, $b) {
     }
 });
 
+================================================================================
 `;

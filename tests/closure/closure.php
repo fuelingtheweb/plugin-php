@@ -124,3 +124,13 @@ $rTDWLU = function(array $array) use ($longLongLongLongLongLongLongVar1, $longer
     return array_sum($array);
 };
 
+$var = function &() {
+    static $collection = array();
+
+    return $collection;
+};
+
+$func = static function() {};
+$fn = function &() use (&$value) { return $value; };
+
+$var = function () {};

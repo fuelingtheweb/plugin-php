@@ -1,6 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`if.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 if (true) {
   return 1;
@@ -100,7 +105,17 @@ if ( true ) {{
     return 1;
 }} else
     return 3;
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+if ($a === 'string
+string
+string') {
+    $var = 'string
+    string
+    string
+    other';
+}
+
+=====================================output=====================================
 <?php
 if (true) {
     return 1;
@@ -155,30 +170,30 @@ if (
 
 if (
     $this ||
-    $that && $theOtherThing && $someReallyReallyReallyLongBooleanVariable
+    ($that && $theOtherThing && $someReallyReallyReallyLongBooleanVariable)
 ) {
     return true;
 }
 
 if (
     $this ||
-    $that && $theOtherThing < $someReallyReallyReallyLongBooleanVariable
+    ($that && $theOtherThing < $someReallyReallyReallyLongBooleanVariable)
 ) {
     return true;
 }
 
 if (
     $this ||
-    $that &&
+    ($that &&
         $theOtherThing < $someReallyReallyReallyLongBooleanVariable ==
-            $equalCheck
+            $equalCheck)
 ) {
     return true;
 }
 
 if (
     $this ||
-    $that && $theOtherThing ||
+    ($that && $theOtherThing) ||
     $someReallyReallyReallyLongBooleanVariable
 ) {
     return true;
@@ -234,4 +249,17 @@ if (true) {
     return 3;
 }
 
+if (
+    $a ===
+    'string
+string
+string'
+) {
+    $var = 'string
+    string
+    string
+    other';
+}
+
+================================================================================
 `;

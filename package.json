@@ -1,6 +1,6 @@
 {
   "name": "@prettier/plugin-php",
-  "version": "0.6.0",
+  "version": "0.9.0",
   "description": "Prettier PHP Plugin",
   "repository": "prettier/prettier-php",
   "author": "Lucas Azzola <@azz>",
@@ -10,21 +10,23 @@
     "src"
   ],
   "dependencies": {
-    "mem": "^3.0.1",
-    "php-parser": "3.0.0-alpha2"
+    "mem": "^4.0.0",
+    "php-parser": "glayzzle/php-parser#71485979b688d12fb130d3e853fdc00348671e00"
   },
   "devDependencies": {
-    "eslint": "4.1.1",
-    "eslint-config-prettier": "2.9.0",
-    "eslint-plugin-import": "2.6.1",
-    "eslint-plugin-jest": "21.5.0",
-    "eslint-plugin-prettier": "2.4.0",
-    "jest": "21.1.0",
-    "jest-runner-eslint": "0.3.0",
-    "prettier": "prettier/prettier"
+    "codecov": "3.1.0",
+    "eslint": "5.12.1",
+    "eslint-config-prettier": "3.6.0",
+    "eslint-plugin-import": "2.15.0",
+    "eslint-plugin-jest": "22.1.3",
+    "eslint-plugin-prettier": "3.0.1",
+    "jest": "23.6.0",
+    "jest-runner-eslint": "0.7.1",
+    "jest-snapshot-serializer-raw": "^1.1.0",
+    "prettier": "^1.15.3"
   },
   "peerDependencies": {
-    "prettier": "^1.12.0"
+    "prettier": "^1.15.0"
   },
   "scripts": {
     "test": "jest",

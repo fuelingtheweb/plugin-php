@@ -1,15 +1,27 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`single.php 1`] = `
-<?php
-$variable;
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 $variable;
 
+=====================================output=====================================
+<?php
+$variable;
+
+================================================================================
 `;
 
 exports[`variable.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 
 $var = 'Bob';
@@ -44,13 +56,31 @@ $var = Foo::$bar['baz']();
 $var = \${$foo['bar']['baz']};
 $var = $foo->{$bar['baz']};
 $var = $foo->{$bar['baz']}();
-// $var = Foo::{$bar['baz']}();
+$var = Foo::{$bar['baz']}();
 
 $var = ($$foo)['bar']['baz'];
 $var = ($foo->$bar)['baz'];
 $var = ($foo->$bar)['baz']();
-$var = (Foo::$bar)['baz']();
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+$var = Foo::$bar()['baz']();
+
+$var = (Foo::$bar())['baz']();
+$var = Foo::bar()['baz']();
+$var = (Foo::bar())['baz']();
+
+$var = Foo::$bar['baz'];
+$var = (Foo::$bar)['baz'];
+
+$$$$$$$$$$var = "I like playing in the park";
+
+$var = \${$a[1]};
+$var = \${$a}[1];
+$var = \${"name_$type"};
+$var = \${ 'price_for_' . $today};
+\${date("M")} = "Worked";
+\${$a}[] =  "four" ;
+\${$base.$suffix} = "whatever";
+
+=====================================output=====================================
 <?php
 
 $var = 'Bob';
@@ -59,18 +89,17 @@ $_4site = 'not yet';
 $täyte = 'mansikka';
 $bar = &$foo;
 $bar = "My name is $bar";
-$id = $element->$id_field;
+$id = $element->{$id_field};
 $id = $element[$id_field];
 $var = <<<EOT
-My name is "$name". I am printing some {$foo->foo}.
-Now, I am printing some {$foo
-    ->bar[1]}.
+My name is "$name". I am printing some $foo->foo.
+Now, I am printing some {$foo->bar[1]}.
 This should print a capital 'A': \\x41
 EOT;
 $var = "He drank some $juice juice." . PHP_EOL;
-$var = "He drank some {$juices[0]} juice." . PHP_EOL;
-$var = "He drank some {$juices[koolaid1]} juice." . PHP_EOL;
-$var = "{$people->john} then said hello to {$people->jane}." . PHP_EOL;
+$var = "He drank some $juices[0] juice." . PHP_EOL;
+$var = "He drank some $juices[koolaid1] juice." . PHP_EOL;
+$var = "$people->john then said hello to $people->jane." . PHP_EOL;
 $var = "{$foo->{$baz[1]}}\\n";
 $var = $var->{$var->property};
 $var = $var->$var->property;
@@ -86,11 +115,29 @@ $var = Foo::$bar['baz']();
 $var = \${$foo['bar']['baz']};
 $var = $foo->{$bar['baz']};
 $var = $foo->{$bar['baz']}();
-// $var = Foo::{$bar['baz']}();
+$var = Foo::{$bar['baz']}();
 
-$var = ($$foo)['bar']['baz'];
-$var = ($foo->$bar)['baz'];
-$var = ($foo->$bar)['baz']();
-$var = (Foo::$bar)['baz']();
+$var = $$foo['bar']['baz'];
+$var = $foo->$bar['baz'];
+$var = $foo->$bar['baz']();
+$var = Foo::$bar()['baz']();
 
+$var = Foo::$bar()['baz']();
+$var = Foo::bar()['baz']();
+$var = Foo::bar()['baz']();
+
+$var = Foo::$bar['baz'];
+$var = Foo::$bar['baz'];
+
+$$$$$$$$$$var = "I like playing in the park";
+
+$var = \${$a[1]};
+$var = \${$a}[1];
+$var = \${"name_$type"};
+$var = \${'price_for_' . $today};
+\${date("M")} = "Worked";
+\${$a}[] = "four";
+\${$base . $suffix} = "whatever";
+
+================================================================================
 `;

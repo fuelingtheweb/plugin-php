@@ -1,6 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`exit.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 exit("exit info");
 exit(1);
@@ -11,7 +16,49 @@ exit("Very very very very very very very very very very very very very very very
 exit;
 exit();
 exit(0376);
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+exit('string
+string
+string');
+exit(
+    'string
+string
+string'
+);
+exit("string
+string
+string
+$var");
+exit(
+"string
+string
+string
+$var"
+);
+exit(\`string
+string
+string
+$var\`);
+exit(
+\`string
+string
+string
+$var\`
+);
+exit(<<<FOO
+string
+string
+string
+$var
+FOO
+);
+exit(<<<'FOO'
+string
+string
+string
+FOO
+);
+
+=====================================output=====================================
 <?php
 exit("exit info");
 exit(1);
@@ -25,5 +72,49 @@ exit(
 exit();
 exit();
 exit(0376);
+exit('string
+string
+string');
+exit(
+    'string
+string
+string'
+);
+exit("string
+string
+string
+$var");
+exit(
+    "string
+string
+string
+$var"
+);
+exit(\`string
+string
+string
+$var\`);
+exit(
+    \`string
+string
+string
+$var\`
+);
+exit(
+    <<<FOO
+string
+string
+string
+$var
+FOO
+);
+exit(
+    <<<'FOO'
+string
+string
+string
+FOO
+);
 
+================================================================================
 `;

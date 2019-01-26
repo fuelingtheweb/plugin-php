@@ -61,3 +61,26 @@ $foo->bar()();
 $foo->bar('veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLong')();
 $foo->bar()('veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLong');
 $foo->bar('veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLong')()()()()();
+
+$brian->hotel->orders()->ordered()->with('smith')->get();
+$brian::$hotel->orders()->ordered()->with('smith')->get();
+$brian['hotel']->orders()->ordered()->with('smith')->get();
+Foo::$hotel->orders()->ordered()->with('smith')->get();
+(new Foo())->hotel->orders()->ordered()->with('smith')->get();
+(clone $a)->hotel->orders()->ordered()->with('smith')->get();
+
+$var = $brian->hotel->orders()->ordered()->with('smith')->get();
+$var = $brian::$hotel->orders()->ordered()->with('smith')->get();
+$var = $brian['hotel']->orders()->ordered()->with('smith')->get();
+$var = Foo::$hotel->orders()->ordered()->with('smith')->get();
+$var = (new Foo())->hotel->orders()->ordered()->with('smith')->get();
+$var = (clone $a)->hotel->orders()->ordered()->with('smith')->get();
+
+$var = Foo::keys($items)->filter(function ($x) { return $x > 2; })->map(function ($x) { return $x * 2; });
+
+(new static(func_get_args()))->push($this)->each(function ($item) {
+    VarDumper::dump($item);
+});
+(new static(func_get_args()))->offset(10)->push($this)->each(function ($item) {
+    VarDumper::dump($item);
+});

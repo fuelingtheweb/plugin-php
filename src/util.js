@@ -1,5 +1,11 @@
 "use strict";
 
+const {
+  hasNewline,
+  skipEverythingButNewLine,
+  skipNewline
+} = require("prettier").util;
+
 function printNumber(rawNumber) {
   return (
     rawNumber
@@ -38,7 +44,6 @@ const PRECEDENCE = {};
     "<<=",
     ">>="
   ],
-  ["?:"],
   ["??"],
   ["||"],
   ["&&"],
@@ -51,10 +56,9 @@ const PRECEDENCE = {};
   ["+", "-", "."],
   ["*", "/", "%"],
   ["!"],
+  ["instanceof"],
   ["++", "--", "~"],
-  ["**"],
-  ["["],
-  ["clone", "new"]
+  ["**"]
 ].forEach((tier, i) => {
   tier.forEach(op => {
     PRECEDENCE[op] = i;
@@ -66,17 +70,20 @@ function getPrecedence(op) {
 }
 
 const equalityOperators = ["==", "!=", "===", "!==", "<>", "<=>"];
-const additiveOperators = ["+", "-"];
 const multiplicativeOperators = ["*", "/", "%"];
 const bitshiftOperators = [">>", "<<"];
 
+function isBitwiseOperator(operator) {
+  return (
+    !!bitshiftOperators[operator] ||
+    operator === "|" ||
+    operator === "^" ||
+    operator === "&"
+  );
+}
+
 function shouldFlatten(parentOp, nodeOp) {
   if (getPrecedence(nodeOp) !== getPrecedence(parentOp)) {
-    // x + y % z --> (x + y) % z
-    if (nodeOp === "%" && !additiveOperators.includes(parentOp)) {
-      return true;
-    }
-
     return false;
   }
 
@@ -230,19 +237,112 @@ function isFirstChildrenInlineNode(path) {
   return firstChild.kind === "inline";
 }
 
+function isDocNode(node) {
+  return (
+    node.kind === "nowdoc" ||
+    (node.kind === "encapsed" && node.type === "heredoc")
+  );
+}
+
 /**
  * Heredoc/Nowdoc nodes need a trailing linebreak if they
  * appear as function arguments or array elements
  */
 function docShouldHaveTrailingNewline(path) {
-  return ["entry"].includes(path.getParentNode().kind);
+  const node = path.getValue();
+  const parent = path.getParentNode();
+  const parentParent = path.getParentNode(1);
+
+  if (!parent) {
+    return false;
+  }
+
+  if (
+    (parentParent && ["call", "new", "echo"].includes(parentParent.kind)) ||
+    parent.kind === "parameter"
+  ) {
+    const lastIndex = parentParent.arguments.length - 1;
+    const index = parentParent.arguments.indexOf(parent);
+
+    return index !== lastIndex;
+  }
+
+  if (parentParent && parentParent.kind === "for") {
+    const initIndex = parentParent.init.indexOf(parent);
+
+    if (initIndex !== -1) {
+      return initIndex !== parentParent.init.length - 1;
+    }
+
+    const testIndex = parentParent.test.indexOf(parent);
+
+    if (testIndex !== -1) {
+      return testIndex !== parentParent.test.length - 1;
+    }
+
+    const incrementIndex = parentParent.increment.indexOf(parent);
+
+    if (incrementIndex !== -1) {
+      return incrementIndex !== parentParent.increment.length - 1;
+    }
+  }
+
+  if (parent.kind === "bin") {
+    if (parentParent && parentParent.kind === "bin") {
+      return true;
+    }
+
+    return parent.left === node;
+  }
+
+  if (parent.kind === "case" && parent.test === node) {
+    return true;
+  }
+
+  if (parent.kind === "staticvariable") {
+    const lastIndex = parentParent.variables.length - 1;
+    const index = parentParent.variables.indexOf(parent);
+
+    return index !== lastIndex;
+  }
+
+  if (parent.kind === "entry") {
+    if (parent.key === node) {
+      return true;
+    }
+
+    const lastIndex = parentParent.items.length - 1;
+    const index = parentParent.items.indexOf(parent);
+
+    return index !== lastIndex;
+  }
+
+  if (["call", "new"].includes(parent.kind)) {
+    const lastIndex = parent.arguments.length - 1;
+    const index = parent.arguments.indexOf(node);
+
+    return index !== lastIndex;
+  }
+
+  if (parent.kind === "echo") {
+    const lastIndex = parent.expressions.length - 1;
+    const index = parent.expressions.indexOf(node);
+
+    return index !== lastIndex;
+  }
+
+  if (parent.kind === "array") {
+    const lastIndex = parent.items.length - 1;
+    const index = parent.items.indexOf(node);
+
+    return index !== lastIndex;
+  }
+
+  return false;
 }
 
 function lineShouldEndWithSemicolon(path) {
-  let node = path.getValue();
-  while (node.kind === "parenthesis") {
-    node = node.inner;
-  }
+  const node = path.getValue();
   const parentNode = path.getParentNode();
   if (!parentNode) {
     return false;
@@ -262,7 +362,12 @@ function lineShouldEndWithSemicolon(path) {
   if (!nodeHasStatement(parentNode)) {
     return false;
   }
+  if (node.kind === "echo" && node.shortForm) {
+    return false;
+  }
   const semiColonWhitelist = [
+    "expressionstatement",
+    "array",
     "assign",
     "return",
     "break",
@@ -283,7 +388,7 @@ function lineShouldEndWithSemicolon(path) {
     "empty",
     "traitprecedence",
     "traitalias",
-    "constant",
+    "constantstatement",
     "classconstant",
     "exit",
     "global",
@@ -305,7 +410,11 @@ function lineShouldEndWithSemicolon(path) {
     "number",
     "nowdoc",
     "encapsed",
-    "variable"
+    "variable",
+    "cast",
+    "clone",
+    "do",
+    "constref"
   ];
   if (node.kind === "traituse") {
     return !node.adaptations;
@@ -326,30 +435,27 @@ function fileShouldEndWithHardline(path) {
   const node = path.getValue();
   const isProgramNode = node.kind === "program";
   const lastNode = node.children && getLast(node.children);
+
   if (!isProgramNode) {
     return false;
   }
-  if (
-    lastNode &&
-    lastNode.kind === "inline" &&
-    lastNode.raw[lastNode.raw.length - 1] === "\n"
-  ) {
+
+  if (lastNode && ["halt", "inline"].includes(lastNode.kind)) {
     return false;
   }
+
   if (
     lastNode &&
     (lastNode.kind === "declare" || lastNode.kind === "namespace")
   ) {
     const lastNestedNode =
       lastNode.children.length > 0 && getLast(lastNode.children);
-    if (
-      lastNestedNode &&
-      lastNestedNode.kind === "inline" &&
-      lastNestedNode.raw[lastNestedNode.raw.length - 1] === "\n"
-    ) {
+
+    if (lastNestedNode && ["halt", "inline"].includes(lastNestedNode.kind)) {
       return false;
     }
   }
+
   return true;
 }
 
@@ -384,8 +490,22 @@ function isLookupNode(node) {
   );
 }
 
+function shouldPrintHardLineAfterStartInControlStructure(path) {
+  const node = path.getValue();
+
+  if (["try", "catch"].includes(node.kind)) {
+    return false;
+  }
+
+  return isFirstChildrenInlineNode(path);
+}
+
 function shouldPrintHardLineBeforeEndInControlStructure(path) {
   const node = path.getValue();
+
+  if (["try", "catch"].includes(node.kind)) {
+    return true;
+  }
 
   if (node.kind === "switch") {
     const children = getNodeListProperty(node.body);
@@ -435,8 +555,34 @@ function getLastNestedChildNode(node) {
   return node;
 }
 
+function getNextNode(path, node) {
+  const parent = path.getParentNode();
+  const children = getNodeListProperty(parent);
+
+  if (!children) {
+    return null;
+  }
+
+  const index = children.indexOf(node);
+
+  if (index === -1) {
+    return null;
+  }
+
+  return parent.children[index + 1];
+}
+
 function isProgramLikeNode(node) {
   return ["program", "declare", "namespace"].includes(node.kind);
+}
+
+function isReferenceLikeNode(node) {
+  return [
+    "classreference",
+    "parentreference",
+    "selfreference",
+    "staticreference"
+  ].includes(node.kind);
 }
 
 // Return `logical` value for `bin` node containing `||` or `&&` type otherwise return kind of node.
@@ -449,9 +595,85 @@ function getNodeKindIncludingLogical(node) {
   return node.kind;
 }
 
+/**
+ * Check if string can safely be converted from double to single quotes, i.e.
+ *
+ * - no embedded variables ("foo $bar")
+ * - no linebreaks
+ * - no special characters like \n, \t, ...
+ * - no octal/hex/unicode characters
+ *
+ * See http://php.net/manual/en/language.types.string.php#language.types.string.syntax.double
+ */
+function useSingleQuote(node, options) {
+  return (
+    !node.isDoubleQuote ||
+    (options.singleQuote &&
+      !node.raw.match(/\\n|\\t|\\r|\\t|\\v|\\e|\\f/) &&
+      !node.value.match(
+        /["'$\n]|\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|\\u{[0-9A-Fa-f]+}/
+      ))
+  );
+}
+
+function hasEmptyBody(path, name = "body") {
+  const node = path.getValue();
+
+  return (
+    node[name] &&
+    node[name].children &&
+    node[name].children.length === 0 &&
+    (!node[name].comments || node[name].comments.length === 0)
+  );
+}
+
+function isNextLineEmptyAfterNamespace(text, node, locStart) {
+  let idx = locStart(node);
+  idx = skipEverythingButNewLine(text, idx);
+  idx = skipNewline(text, idx);
+  return hasNewline(text, idx);
+}
+
+function shouldPrintHardlineBeforeTrailingComma(lastElem) {
+  if (
+    lastElem.kind === "nowdoc" ||
+    (lastElem.kind === "encapsed" && lastElem.type === "heredoc")
+  ) {
+    return true;
+  }
+
+  if (
+    lastElem.kind === "entry" &&
+    (lastElem.value.kind === "nowdoc" ||
+      (lastElem.value.kind === "encapsed" && lastElem.value.type === "heredoc"))
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function getAncestorCounter(path, typeOrTypes) {
+  const types = [].concat(typeOrTypes);
+  let counter = -1;
+  let ancestorNode;
+  while ((ancestorNode = path.getParentNode(++counter))) {
+    if (types.indexOf(ancestorNode.kind) !== -1) {
+      return counter;
+    }
+  }
+  return -1;
+}
+
+function getAncestorNode(path, typeOrTypes) {
+  const counter = getAncestorCounter(path, typeOrTypes);
+  return counter === -1 ? null : path.getParentNode(counter);
+}
+
 module.exports = {
   printNumber,
   getPrecedence,
+  isBitwiseOperator,
   shouldFlatten,
   nodeHasStatement,
   getNodeListProperty,
@@ -469,10 +691,19 @@ module.exports = {
   docShouldHaveTrailingNewline,
   isLookupNode,
   isFirstChildrenInlineNode,
+  shouldPrintHardLineAfterStartInControlStructure,
   shouldPrintHardLineBeforeEndInControlStructure,
   getAlignment,
   getFirstNestedChildNode,
   getLastNestedChildNode,
   isProgramLikeNode,
-  getNodeKindIncludingLogical
+  isReferenceLikeNode,
+  getNodeKindIncludingLogical,
+  useSingleQuote,
+  hasEmptyBody,
+  isNextLineEmptyAfterNamespace,
+  shouldPrintHardlineBeforeTrailingComma,
+  isDocNode,
+  getAncestorNode,
+  getNextNode
 };

@@ -1,6 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`case.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 DECLARE(ticks=1);
 
@@ -153,6 +158,8 @@ FINAL CLASS MyClass EXTENDS Bar IMPLEMENTS iTemplate
 
         var_dump($a INSTANCEOF MyClass);
 
+        $bar = (INT) $foo;
+
         DIE();
         EXIT();
         EVAL('test');
@@ -237,7 +244,8 @@ FINAL CLASS MyClass EXTENDS Bar IMPLEMENTS iTemplate
 }
 
 __HALT_COMPILER();
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=====================================output=====================================
 <?php
 declare(ticks=1);
 
@@ -289,7 +297,7 @@ final class MyClass extends Bar implements iTemplate
 
     private $private = 'Private';
 
-    public $foo = 'Bar';
+    var $foo = 'Bar';
 
     function printHello()
     {
@@ -400,6 +408,8 @@ final class MyClass extends Bar implements iTemplate
 
         var_dump($a instanceof MyClass);
 
+        $bar = (int) $foo;
+
         die();
         exit();
         eval('test');
@@ -484,4 +494,5 @@ final class MyClass extends Bar implements iTemplate
 
 __halt_compiler();
 
+================================================================================
 `;

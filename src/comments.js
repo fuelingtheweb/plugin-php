@@ -5,9 +5,22 @@ const {
   addDanglingComment,
   addTrailingComment,
   getNextNonSpaceNonCommentCharacterIndex,
-  isNextLineEmpty
+  isNextLineEmpty,
+  skipNewline,
+  isPreviousLineEmpty,
+  hasNewline,
+  hasNewlineInRange
 } = require("prettier").util;
-const { concat, join, indent, hardline } = require("prettier").doc.builders;
+const {
+  concat,
+  join,
+  indent,
+  hardline,
+  cursor,
+  lineSuffix,
+  breakParent
+} = require("prettier").doc.builders;
+const { isLookupNode } = require("./util");
 
 /*
 Comment functions are meant to inspect various edge cases using given comment nodes,
@@ -26,80 +39,423 @@ args:
   isLastComment
 */
 
-const handleOwnLineComment = (comment, text, options, ast, isLastComment) => {
-  const { enclosingNode } = comment;
+function handleOwnLineComment(comment, text, options) {
+  const { precedingNode, enclosingNode, followingNode } = comment;
   return (
-    handleClass(comment) ||
-    handleFunctionParameter(comment, text, options) ||
-    handleFunction(comment, text, options) ||
-    handleForLoop(comment) ||
-    handleTryCatch(comment) ||
-    handleAlternate(comment) ||
-    handleOnlyComments(enclosingNode, ast, comment, isLastComment) ||
-    handleInlineComments(comment)
+    handleLastFunctionArgComments(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment,
+      options
+    ) ||
+    handleMemberExpressionComments(enclosingNode, followingNode, comment) ||
+    handleIfStatementComments(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment,
+      options
+    ) ||
+    handleWhileComments(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment,
+      options
+    ) ||
+    handleTryComments(enclosingNode, followingNode, comment) ||
+    handleClassComments(enclosingNode, followingNode, comment) ||
+    handleFunctionParameter(text, enclosingNode, comment, options) ||
+    handleFunction(text, enclosingNode, followingNode, comment, options) ||
+    handleForComments(enclosingNode, precedingNode, followingNode, comment) ||
+    handleInlineComments(
+      enclosingNode,
+      precedingNode,
+      followingNode,
+      comment
+    ) ||
+    handleDeclareComments(enclosingNode, precedingNode, followingNode, comment)
   );
-};
+}
 
-const handleEndOfLineComment = (comment, text, options, ast, isLastComment) => {
-  const { enclosingNode } = comment;
+function handleEndOfLineComment(comment, text, options) {
+  const { precedingNode, enclosingNode, followingNode } = comment;
   return (
-    handleClass(comment) ||
-    handleFunctionParameter(comment, text, options) ||
-    handleFunction(comment, text, options) ||
-    handleForLoop(comment) ||
-    handleTryCatch(comment) ||
-    handleOnlyComments(enclosingNode, ast, comment, isLastComment)
+    handleArrayComments(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment,
+      options
+    ) ||
+    handleReturnComments(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment,
+      options
+    ) ||
+    handleLastFunctionArgComments(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment,
+      options
+    ) ||
+    handleRetifComments(
+      enclosingNode,
+      precedingNode,
+      followingNode,
+      comment,
+      text,
+      options
+    ) ||
+    handleIfStatementComments(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment,
+      options
+    ) ||
+    handleWhileComments(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment,
+      options
+    ) ||
+    handleTryComments(enclosingNode, followingNode, comment) ||
+    handleClassComments(enclosingNode, followingNode, comment) ||
+    handleFunctionParameter(text, enclosingNode, comment, options) ||
+    handleFunction(text, enclosingNode, followingNode, comment, options) ||
+    handleEntryComments(enclosingNode, comment) ||
+    handleCallComments(precedingNode, enclosingNode, comment) ||
+    handlePropertyComments(enclosingNode, comment) ||
+    handleVariableComments(enclosingNode, followingNode, comment) ||
+    handleInlineComments(
+      enclosingNode,
+      precedingNode,
+      followingNode,
+      comment
+    ) ||
+    handleNamespaceComments(
+      enclosingNode,
+      precedingNode,
+      followingNode,
+      comment
+    ) ||
+    handleDeclareComments(
+      enclosingNode,
+      precedingNode,
+      followingNode,
+      comment
+    ) ||
+    handleGoto(enclosingNode, comment)
   );
-};
+}
 
-const handleRemainingComment = (comment, text, options, ast, isLastComment) => {
-  const { enclosingNode } = comment;
+function handleRemainingComment(comment, text, options) {
+  const { precedingNode, enclosingNode, followingNode } = comment;
   return (
-    handleClass(comment) ||
-    handleFunctionParameter(comment, text, options) ||
-    handleFunction(comment, text, options) ||
-    handleForLoop(comment) ||
-    handleTryCatch(comment) ||
-    handleBreakAndContinueStatementComments(comment) ||
-    handleGoto(comment) ||
-    handleHalt(comment) ||
-    handleCall(comment) ||
-    handleOnlyComments(enclosingNode, ast, comment, isLastComment)
+    handleIfStatementComments(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment,
+      options
+    ) ||
+    handleWhileComments(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment,
+      options
+    ) ||
+    handleCommentInEmptyParens(text, enclosingNode, comment, options) ||
+    handleClassComments(enclosingNode, followingNode, comment) ||
+    handleTraitUseComments(enclosingNode, followingNode, comment) ||
+    handleFunctionParameter(text, enclosingNode, comment, options) ||
+    handleFunction(text, enclosingNode, followingNode, comment, options) ||
+    handleGoto(enclosingNode, comment) ||
+    handleHalt(precedingNode, enclosingNode, followingNode, comment) ||
+    handleBreakAndContinueStatementComments(enclosingNode, comment) ||
+    handleInlineComments(
+      enclosingNode,
+      precedingNode,
+      followingNode,
+      comment
+    ) ||
+    handleNamespaceComments(
+      enclosingNode,
+      precedingNode,
+      followingNode,
+      comment
+    )
   );
-};
+}
 
-const handleForLoop = comment => {
-  const { enclosingNode, followingNode } = comment;
+function addBlockStatementFirstComment(node, comment) {
+  const { children } = node;
+  if (children.length === 0) {
+    addDanglingComment(node, comment);
+  } else {
+    addLeadingComment(children[0], comment);
+  }
+}
+
+function addBlockOrNotComment(node, comment) {
+  if (node.kind === "block") {
+    addBlockStatementFirstComment(node, comment);
+  } else {
+    addLeadingComment(node, comment);
+  }
+}
+
+function handleArrayComments(
+  text,
+  precedingNode,
+  enclosingNode,
+  followingNode,
+  comment
+) {
   if (
+    !precedingNode &&
+    !followingNode &&
+    enclosingNode &&
+    enclosingNode.kind === "array"
+  ) {
+    addTrailingComment(enclosingNode, comment);
+    return true;
+  }
+
+  return false;
+}
+
+function handleReturnComments(
+  text,
+  precedingNode,
+  enclosingNode,
+  followingNode,
+  comment
+) {
+  if (enclosingNode && enclosingNode.kind === "return" && !enclosingNode.expr) {
+    addTrailingComment(enclosingNode, comment);
+    return true;
+  }
+
+  return false;
+}
+
+function handleLastFunctionArgComments(
+  text,
+  precedingNode,
+  enclosingNode,
+  followingNode,
+  comment,
+  options
+) {
+  const nextCharIndex = getNextNonSpaceNonCommentCharacterIndex(
+    text,
+    comment,
+    options
+  );
+  const nextCharacter = text.charAt(nextCharIndex);
+
+  // Real functions
+  if (
+    precedingNode &&
+    precedingNode.kind === "identifier" &&
+    enclosingNode &&
+    (enclosingNode.kind === "function" || enclosingNode.kind === "method") &&
+    nextCharacter === ")"
+  ) {
+    addTrailingComment(enclosingNode, comment);
+    return true;
+  }
+
+  if (
+    enclosingNode &&
+    (enclosingNode.kind === "function" || enclosingNode.kind === "method") &&
+    followingNode &&
+    followingNode.kind === "block"
+  ) {
+    addBlockStatementFirstComment(followingNode, comment);
+    return true;
+  }
+
+  return false;
+}
+
+function handleMemberExpressionComments(enclosingNode, followingNode, comment) {
+  if (
+    enclosingNode &&
+    isLookupNode(enclosingNode) &&
+    followingNode &&
+    ["identifier", "variable", "encapsed"].includes(followingNode.kind)
+  ) {
+    addLeadingComment(enclosingNode, comment);
+
+    return true;
+  }
+
+  return false;
+}
+
+function handleIfStatementComments(
+  text,
+  precedingNode,
+  enclosingNode,
+  followingNode,
+  comment,
+  options
+) {
+  if (!enclosingNode || enclosingNode.kind !== "if" || !followingNode) {
+    return false;
+  }
+
+  const nextCharIndex = getNextNonSpaceNonCommentCharacterIndex(
+    text,
+    comment,
+    options
+  );
+  const nextCharacter = text.charAt(nextCharIndex);
+
+  if (nextCharacter === ")") {
+    addTrailingComment(precedingNode, comment);
+    return true;
+  }
+
+  // Comments before `else`/`else if` treat as a dangling comment
+  if (
+    precedingNode === enclosingNode.body &&
+    followingNode === enclosingNode.alternate
+  ) {
+    addDanglingComment(enclosingNode, comment);
+    return true;
+  }
+
+  if (followingNode.kind === "if") {
+    addBlockOrNotComment(followingNode.body, comment);
+    return true;
+  }
+
+  // For comments positioned after the condition parenthesis in an if statement
+  // before the consequent without brackets on, such as
+  // if (a) /* comment */ true,
+  // we look at the next character to see if the following node
+  // is the consequent for the if statement
+  if (enclosingNode.body === followingNode) {
+    addLeadingComment(followingNode, comment);
+    return true;
+  }
+
+  return false;
+}
+
+function handleRetifComments(
+  enclosingNode,
+  precedingNode,
+  followingNode,
+  comment,
+  text,
+  options
+) {
+  const isSameLineAsPrecedingNode =
+    precedingNode &&
+    !hasNewlineInRange(
+      text,
+      options.locEnd(precedingNode),
+      options.locStart(comment)
+    );
+
+  if (
+    (!precedingNode || !isSameLineAsPrecedingNode) &&
+    enclosingNode &&
+    enclosingNode.kind === "retif" &&
+    followingNode
+  ) {
+    addLeadingComment(followingNode, comment);
+    return true;
+  }
+  return false;
+}
+
+function handleForComments(
+  enclosingNode,
+  precedingNode,
+  followingNode,
+  comment
+) {
+  if (
+    !followingNode &&
     enclosingNode &&
     (enclosingNode.kind === "for" || enclosingNode.kind === "foreach")
   ) {
+    // For a shortform for loop (where the body is just one node), add
+    // this as a leading comment to the body
     if (enclosingNode.body && enclosingNode.body.kind !== "block") {
-      // for a shortform for loop (where the body is just one node), add
-      // this as a leading comment to the body
       addLeadingComment(followingNode, comment);
-      return true;
-    } else if (
-      // for an empty for loop where the body is only made up of comments, we
-      // need to attach this as a dangling comment on the for loop itself
-      !(enclosingNode.body && enclosingNode.body.children.length > 0)
-    ) {
-      addDanglingComment(enclosingNode, comment);
-      return true;
+    } else {
+      addLeadingComment(enclosingNode, comment);
     }
+    return true;
+  }
+
+  return false;
+}
+
+function handleTraitUseComments(enclosingNode, followingNode, comment) {
+  if (
+    enclosingNode &&
+    enclosingNode.kind === "traituse" &&
+    enclosingNode.adaptations &&
+    !enclosingNode.adaptations.length
+  ) {
+    addDanglingComment(enclosingNode, comment);
+    return true;
   }
   return false;
-};
+}
 
-const handleClass = comment => {
-  const { enclosingNode, followingNode } = comment;
-  if (enclosingNode && enclosingNode.kind === "class") {
+function handleClassComments(enclosingNode, followingNode, comment) {
+  if (
+    enclosingNode &&
+    ["class", "interface", "trait"].includes(enclosingNode.kind)
+  ) {
     // for extends nodes that have leading comments, we can store them as
     // dangling comments so we can handle them in the printer
-    if (followingNode === enclosingNode.extends) {
-      addDanglingComment(followingNode, comment);
-      return true;
+
+    if (followingNode && enclosingNode.extends) {
+      if (!Array.isArray(enclosingNode.extends)) {
+        if (followingNode === enclosingNode.extends) {
+          addDanglingComment(followingNode, comment);
+          return true;
+        }
+      } else {
+        if (
+          enclosingNode.extends.some(extendsNode => {
+            if (followingNode && followingNode === extendsNode) {
+              addDanglingComment(followingNode, comment);
+              return true;
+            }
+          })
+        ) {
+          return true;
+        }
+      }
     }
+
     // check each implements node - if any of them have comments we can store
     // them as dangling comments and handle them in the printer
     if (followingNode && enclosingNode.implements) {
@@ -114,7 +470,8 @@ const handleClass = comment => {
         return true;
       }
     }
-    // for an empty class where the body is only made up of comments, we
+
+    // For an empty class where the body is only made up of comments, we
     // need to attach this as a dangling comment on the class node itself
     if (!(enclosingNode.body && enclosingNode.body.length > 0)) {
       addDanglingComment(enclosingNode, comment);
@@ -122,10 +479,9 @@ const handleClass = comment => {
     }
   }
   return false;
-};
+}
 
-const handleFunction = (comment, text, options) => {
-  const { enclosingNode, followingNode } = comment;
+function handleFunction(text, enclosingNode, followingNode, comment, options) {
   if (
     enclosingNode &&
     (enclosingNode.kind === "function" || enclosingNode.kind === "method")
@@ -141,6 +497,7 @@ const handleFunction = (comment, text, options) => {
           : argumentsLocEnd;
     }
     const commentIsBetweenArgumentsAndBody =
+      enclosingNode.body &&
       options.locStart(comment) > argumentsLocEnd &&
       options.locEnd(comment) < options.locStart(enclosingNode.body);
     const nextCharIndex = getNextNonSpaceNonCommentCharacterIndex(
@@ -165,22 +522,11 @@ const handleFunction = (comment, text, options) => {
       addTrailingComment(enclosingNode.type, comment);
       return true;
     }
-
-    // for empty functions where the body is only made up of comments, we need
-    // to attach this as a dangling comment on the function node itself
-    if (
-      !followingNode && // make sure we're not grabbing inline parameter comments
-      !(enclosingNode.body && enclosingNode.body.children.length > 0)
-    ) {
-      addDanglingComment(enclosingNode, comment);
-      return true;
-    }
   }
   return false;
-};
+}
 
-const handleFunctionParameter = (comment, text, options) => {
-  const { enclosingNode } = comment;
+function handleFunctionParameter(text, enclosingNode, comment, options) {
   if (
     !enclosingNode ||
     !["function", "method", "parameter"].includes(enclosingNode.kind)
@@ -201,26 +547,9 @@ const handleFunctionParameter = (comment, text, options) => {
     return true;
   }
   return false;
-};
+}
 
-const handleTryCatch = comment => {
-  const { enclosingNode } = comment;
-  if (
-    enclosingNode &&
-    (enclosingNode.kind === "try" || enclosingNode.kind === "catch")
-  ) {
-    // for empty try/catch blocks where the body is only made up of comments, we need
-    // to attach this as a dangling comment on the node itself
-    if (!(enclosingNode.body && enclosingNode.body.children.length > 0)) {
-      addDanglingComment(enclosingNode, comment);
-      return true;
-    }
-  }
-  return false;
-};
-
-function handleBreakAndContinueStatementComments(comment) {
-  const { enclosingNode } = comment;
+function handleBreakAndContinueStatementComments(enclosingNode, comment) {
   if (
     enclosingNode &&
     (enclosingNode.kind === "continue" || enclosingNode.kind === "break") &&
@@ -232,54 +561,71 @@ function handleBreakAndContinueStatementComments(comment) {
   return false;
 }
 
-const handleGoto = comment => {
-  const { enclosingNode } = comment;
-  if (enclosingNode && enclosingNode.kind === "goto") {
+function handleGoto(enclosingNode, comment) {
+  if (enclosingNode && ["label", "goto"].includes(enclosingNode.kind)) {
     addTrailingComment(enclosingNode, comment);
     return true;
   }
   return false;
-};
+}
 
-const handleHalt = comment => {
-  const { enclosingNode } = comment;
+function handleHalt(precedingNode, enclosingNode, followingNode, comment) {
   if (enclosingNode && enclosingNode.kind === "halt") {
-    addTrailingComment(enclosingNode, comment);
+    addDanglingComment(enclosingNode, comment);
     return true;
   }
-  return false;
-};
 
-const handleCall = comment => {
-  const { enclosingNode } = comment;
+  if (precedingNode && precedingNode.kind === "halt") {
+    addDanglingComment(precedingNode, comment);
+    return true;
+  }
+
+  return false;
+}
+
+function handleCommentInEmptyParens(text, enclosingNode, comment, options) {
+  const nextCharIndex = getNextNonSpaceNonCommentCharacterIndex(
+    text,
+    comment,
+    options
+  );
+
+  if (text.charAt(nextCharIndex) !== ")") {
+    return false;
+  }
+
+  // Only add dangling comments to fix the case when no arguments are present,
+  // i.e. a function without any argument.
   if (
     enclosingNode &&
-    enclosingNode.kind === "call" &&
+    (enclosingNode.kind === "function" ||
+      enclosingNode.kind === "closure" ||
+      enclosingNode.kind === "method" ||
+      enclosingNode.kind === "call" ||
+      enclosingNode.kind === "new") &&
     enclosingNode.arguments.length === 0
   ) {
     addDanglingComment(enclosingNode, comment);
     return true;
   }
   return false;
-};
+}
 
-const handleAlternate = comment => {
-  const { enclosingNode, followingNode } = comment;
-  if (
-    enclosingNode &&
-    enclosingNode.kind === "if" &&
-    followingNode &&
-    followingNode.kind == "if"
-  ) {
-    addLeadingComment(followingNode.body, comment);
-    return true;
-  }
-  return false;
-};
+function handleInlineComments(
+  enclosingNode,
+  precedingNode,
+  followingNode,
+  comment
+) {
+  if (followingNode && followingNode.kind === "inline") {
+    if (!followingNode.leadingComments) {
+      followingNode.leadingComments = [];
+    }
 
-const handleInlineComments = comment => {
-  const { precedingNode, enclosingNode, followingNode } = comment;
-  if (!enclosingNode && followingNode && followingNode.kind === "inline") {
+    if (!followingNode.leadingComments.includes(comment)) {
+      followingNode.leadingComments.push(comment);
+    }
+
     return true;
   } else if (
     !enclosingNode &&
@@ -291,21 +637,171 @@ const handleInlineComments = comment => {
     return true;
   }
   return false;
-};
+}
 
-function handleOnlyComments(enclosingNode, ast, comment, isLastComment) {
-  if (
-    enclosingNode &&
-    enclosingNode.kind === "program" &&
-    enclosingNode.children.length === 0
-  ) {
-    if (isLastComment) {
-      addDanglingComment(enclosingNode, comment);
-    } else {
-      addLeadingComment(enclosingNode, comment);
-    }
+function handleEntryComments(enclosingNode, comment) {
+  if (enclosingNode && enclosingNode.kind === "entry") {
+    addLeadingComment(enclosingNode, comment);
     return true;
   }
+  return false;
+}
+
+function handleVariableComments(enclosingNode, followingNode, comment) {
+  if (
+    enclosingNode &&
+    enclosingNode.kind === "assign" &&
+    followingNode &&
+    (followingNode.kind === "array" ||
+      followingNode.kind === "string" ||
+      followingNode.kind === "encapsed")
+  ) {
+    addLeadingComment(followingNode, comment);
+    return true;
+  }
+  return false;
+}
+
+function handleTryComments(enclosingNode, followingNode, comment) {
+  if (!enclosingNode || enclosingNode.kind !== "try" || !followingNode) {
+    return false;
+  }
+
+  if (followingNode.kind === "block") {
+    addBlockStatementFirstComment(followingNode, comment);
+    return true;
+  }
+
+  if (followingNode.kind === "try") {
+    addBlockOrNotComment(followingNode.always, comment);
+    return true;
+  }
+
+  if (followingNode.kind === "catch") {
+    addBlockOrNotComment(followingNode.body, comment);
+    return true;
+  }
+
+  return false;
+}
+
+function handlePropertyComments(enclosingNode, comment) {
+  if (
+    enclosingNode &&
+    (enclosingNode.kind === "property" ||
+      enclosingNode.kind === "classconstant")
+  ) {
+    addLeadingComment(enclosingNode, comment);
+    return true;
+  }
+  return false;
+}
+
+function handleCallComments(precedingNode, enclosingNode, comment) {
+  if (
+    enclosingNode &&
+    enclosingNode.kind === "call" &&
+    precedingNode &&
+    enclosingNode.what === precedingNode &&
+    enclosingNode.arguments.length > 0
+  ) {
+    addLeadingComment(enclosingNode.arguments[0], comment);
+    return true;
+  }
+  return false;
+}
+
+function handleNamespaceComments(
+  enclosingNode,
+  precedingNode,
+  followingNode,
+  comment
+) {
+  if (
+    !followingNode &&
+    !precedingNode &&
+    enclosingNode &&
+    enclosingNode.kind === "namespace" &&
+    !enclosingNode.withBrackets
+  ) {
+    addTrailingComment(enclosingNode, comment);
+    return true;
+  } else if (
+    !precedingNode &&
+    enclosingNode &&
+    enclosingNode.kind === "namespace" &&
+    !enclosingNode.withBrackets
+  ) {
+    addDanglingComment(enclosingNode, comment);
+    return true;
+  }
+
+  return false;
+}
+
+function handleDeclareComments(
+  enclosingNode,
+  precedingNode,
+  followingNode,
+  comment
+) {
+  if (!enclosingNode || enclosingNode.kind !== "declare") {
+    return false;
+  }
+
+  if (!followingNode || enclosingNode.directives[0] === followingNode) {
+    if (enclosingNode.mode === "none") {
+      addTrailingComment(enclosingNode, comment);
+    } else {
+      addDanglingComment(enclosingNode, comment);
+    }
+
+    return true;
+  }
+
+  if (followingNode && precedingNode) {
+    addLeadingComment(followingNode, comment);
+
+    return true;
+  }
+
+  return false;
+}
+
+function handleWhileComments(
+  text,
+  precedingNode,
+  enclosingNode,
+  followingNode,
+  comment,
+  options
+) {
+  if (!enclosingNode || enclosingNode.kind !== "while" || !followingNode) {
+    return false;
+  }
+  // We unfortunately have no way using the AST or location of nodes to know
+  // if the comment is positioned before the condition parenthesis:
+  //   while (a /* comment */) {}
+  // The only workaround I found is to look at the next character to see if
+  // it is a ).
+
+  const nextCharIndex = getNextNonSpaceNonCommentCharacterIndex(
+    text,
+    comment,
+    options
+  );
+  const nextCharacter = text.charAt(nextCharIndex);
+
+  if (nextCharacter === ")") {
+    addTrailingComment(precedingNode, comment);
+    return true;
+  }
+
+  if (followingNode.kind === "block") {
+    addBlockStatementFirstComment(followingNode, comment);
+    return true;
+  }
+
   return false;
 }
 
@@ -355,6 +851,15 @@ function hasTrailingComment(node) {
   return node.comments && node.comments.some(comment => comment.trailing);
 }
 
+function hasLeadingOwnLineComment(text, node, options) {
+  return (
+    node.comments &&
+    node.comments.some(
+      comment => comment.leading && hasNewline(text, options.locEnd(comment))
+    )
+  );
+}
+
 function printComments(comments, options) {
   const parts = [];
   comments.forEach((comment, index, comments) => {
@@ -371,12 +876,166 @@ function printComments(comments, options) {
   return concat(parts);
 }
 
+function isBlockComment(comment) {
+  return comment.kind === "commentblock";
+}
+
+function getCommentChildNodes(node) {
+  if (typeof node !== "object") {
+    return [];
+  }
+
+  const getChildNodes = node =>
+    Object.keys(node)
+      .filter(
+        n =>
+          n !== "kind" &&
+          n !== "loc" &&
+          n !== "errors" &&
+          n !== "extra" &&
+          n !== "comments" &&
+          n !== "leadingComments" &&
+          n !== "enclosingNode" &&
+          n !== "precedingNode" &&
+          n !== "followingNode"
+      )
+      .map(n => node[n]);
+
+  return getChildNodes(node);
+}
+
+function canAttachComment(node) {
+  return (
+    node.kind && node.kind !== "commentblock" && node.kind !== "commentline"
+  );
+}
+
+// Based on https://github.com/prettier/prettier/blob/master/src/main/comments.js
+// TODO remove after https://github.com/prettier/prettier/issues/5087
+function prependCursorPlaceholder(path, options, printed) {
+  if (path.getNode() === options.cursorNode && path.getValue()) {
+    return concat([cursor, printed, cursor]);
+  }
+
+  return printed;
+}
+
+function printLeadingComment(commentPath, print, options) {
+  const comment = commentPath.getValue();
+  const contents = printComment(commentPath, options);
+
+  if (!contents) {
+    return "";
+  }
+
+  const isBlock =
+    options.printer.isBlockComment && options.printer.isBlockComment(comment);
+
+  // Leading block comments should see if they need to stay on the
+  // same line or not.
+  if (isBlock) {
+    return concat([
+      contents,
+      hasNewline(options.originalText, options.locEnd(comment)) ? hardline : " "
+    ]);
+  }
+
+  return concat([contents, hardline]);
+}
+
+function printTrailingComment(commentPath, print, options) {
+  const comment = commentPath.getValue();
+  const contents = printComment(commentPath, options);
+  if (!contents) {
+    return "";
+  }
+  const isBlock =
+    options.printer.isBlockComment && options.printer.isBlockComment(comment);
+
+  if (
+    hasNewline(options.originalText, options.locStart(comment), {
+      backwards: true
+    })
+  ) {
+    // This allows comments at the end of nested structures:
+    // {
+    //   x: 1,
+    //   y: 2
+    //   // A comment
+    // }
+    // Those kinds of comments are almost always leading comments, but
+    // here it doesn't go "outside" the block and turns it into a
+    // trailing comment for `2`. We can simulate the above by checking
+    // if this a comment on its own line; normal trailing comments are
+    // always at the end of another expression.
+
+    const isLineBeforeEmpty = isPreviousLineEmpty(
+      options.originalText,
+      comment,
+      options
+    );
+
+    return lineSuffix(
+      concat([hardline, isLineBeforeEmpty ? hardline : "", contents])
+    );
+  } else if (isBlock) {
+    // Trailing block comments never need a newline
+    return concat([" ", contents]);
+  }
+
+  return concat([lineSuffix(` ${contents}`), !isBlock ? breakParent : ""]);
+}
+
+function printAllComments(path, print, options, needsSemi) {
+  const value = path.getValue();
+  const printed = print(path);
+  const comments = value && value.comments;
+
+  if (!comments || comments.length === 0) {
+    return prependCursorPlaceholder(path, options, printed);
+  }
+
+  const leadingParts = [];
+  const trailingParts = [needsSemi ? ";" : "", printed];
+
+  path.each(commentPath => {
+    const comment = commentPath.getValue();
+    const { leading, trailing } = comment;
+
+    if (leading) {
+      const contents = printLeadingComment(commentPath, print, options);
+      if (!contents) {
+        return;
+      }
+      leadingParts.push(contents);
+
+      const text = options.originalText;
+      if (hasNewline(text, skipNewline(text, options.locEnd(comment)))) {
+        leadingParts.push(hardline);
+      }
+    } else if (trailing) {
+      trailingParts.push(printTrailingComment(commentPath, print, options));
+    }
+  }, "comments");
+
+  return prependCursorPlaceholder(
+    path,
+    options,
+    concat(leadingParts.concat(trailingParts))
+  );
+}
+
 module.exports = {
   handleOwnLineComment,
   handleEndOfLineComment,
   handleRemainingComment,
+  getCommentChildNodes,
+  canAttachComment,
+  isBlockComment,
   printDanglingComments,
   hasLeadingComment,
   hasTrailingComment,
-  printComments
+  hasLeadingOwnLineComment,
+  printComments,
+  printAllComments
 };

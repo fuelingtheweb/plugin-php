@@ -1,6 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`assign.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 $var = 1;
 $var = 111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111;
@@ -75,7 +80,27 @@ $obj->veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongProperty = $obj->veryVeryV
 $obj->veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongProperty->veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongProperty = (new MyClass())->call($arg);
 $obj->loooooooooooong->lookup = $this->getRequest()->getParam('instance-resource-id');
 $obj->loooooooooooong->lookup = (int) $this->getRequest()->getParam('instance-resource-id');
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+$component = $var->insertReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component = $var->insertReallyReallyReally{$ReallyReallyReallyReallyReallyLongName};
+$component = Foo::$insertReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component = $a::$insertReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component = (new Foo())->insertReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component = (clone $a)->insertReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+
+$component = $var->insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component = $var->insertReallyReallyReallyReallyReallyReallyReallyReallyReally{$ReallyReallyReallyReallyReallyReallyLongName};
+$component = Foo::$insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component = $a::$insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component = (new Foo())->insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component = (clone $a)->insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+
+$component = $var->insertReallyReallyReallyReallyReallyReallyReallyReallyLongName[0];
+$component = Foo::$insertReallyReallyReallyReallyReallyReallyReallyReallyLongName[0];
+$component = $var->insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName[0];
+$component = Foo::$insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName[0];
+
+=====================================output=====================================
 <?php
 $var = 1;
 $var = 111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111;
@@ -187,7 +212,7 @@ $computedDescriptionLines =
     'otherKey' => 'otherValue'
 ];
 
-for (($i = 0), ($len = $arr->length); $i < $len; $i++) {
+for ($i = 0, $len = $arr->length; $i < $len; $i++) {
     call($arr[$i]);
 }
 
@@ -210,4 +235,44 @@ $obj->loooooooooooong->lookup = (int) $this->getRequest()->getParam(
     'instance-resource-id'
 );
 
+$component =
+    $var->insertReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component =
+    $var->insertReallyReallyReally{$ReallyReallyReallyReallyReallyLongName};
+$component =
+    Foo::$insertReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component =
+    $a::$insertReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component = (new Foo())
+    ->insertReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component = (clone $a)
+    ->insertReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+
+$component =
+    $var->insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component =
+    $var->insertReallyReallyReallyReallyReallyReallyReallyReallyReally{
+        $ReallyReallyReallyReallyReallyReallyLongName
+    };
+$component =
+    Foo::$insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component =
+    $a::$insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component = (new Foo())
+    ->insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+$component = (clone $a)
+    ->insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName;
+
+$component =
+    $var->insertReallyReallyReallyReallyReallyReallyReallyReallyLongName[0];
+$component =
+    Foo::$insertReallyReallyReallyReallyReallyReallyReallyReallyLongName[0];
+$component =
+    $var
+        ->insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName[0];
+$component =
+    Foo
+        ::$insertReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongName[0];
+
+================================================================================
 `;

@@ -1,6 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`magic.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 __LINE__;
 __FILE__;
@@ -12,7 +17,23 @@ __METHOD__;
 __NAMESPACE__;
 
 $magic = __LINE__;
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class Foo extends Base
+{
+    public static function label()
+    {
+        // Here we run \`Base::label\`
+        return __(parent::{__FUNCTION__}());
+    }
+
+    public static function oLabel()
+    {
+        // Here we run \`Base::__FUNCTION__\`
+        return __(parent::__FUNCTION__());
+    }
+}
+
+=====================================output=====================================
 <?php
 __LINE__;
 __FILE__;
@@ -25,15 +46,38 @@ __NAMESPACE__;
 
 $magic = __LINE__;
 
+class Foo extends Base
+{
+    public static function label()
+    {
+        // Here we run \`Base::label\`
+        return __(parent::{__FUNCTION__}());
+    }
+
+    public static function oLabel()
+    {
+        // Here we run \`Base::__FUNCTION__\`
+        return __(parent::__FUNCTION__());
+    }
+}
+
+================================================================================
 `;
 
 exports[`single.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 __LINE__
 ?>
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=====================================output=====================================
 <?php
 __LINE__;
 ?>
 
+================================================================================
 `;

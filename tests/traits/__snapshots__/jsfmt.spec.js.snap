@@ -1,17 +1,22 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`traits.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 trait A {
   function testFunction() { /*1*/ }
   function otherTestFunction() { /*2*/ }
 }
 
-trait B extends otherTrait {
+trait B {
   function someOtherTestFunction() { /*3*/ }
 }
 
-trait C extends A implements B {
+trait C {
   function someOtherTestFunction() { /*4*/ }
   function testFunction() { /*5*/ }
 }
@@ -40,7 +45,8 @@ class Partial {
 trait emptyTrait {}
 
 trait EmptyTraitWithComment { /* Comment */ }
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=====================================output=====================================
 <?php
 trait A
 {
@@ -54,7 +60,7 @@ trait A
     }
 }
 
-trait B extends otherTrait
+trait B
 {
     function someOtherTestFunction()
     {
@@ -62,7 +68,7 @@ trait B extends otherTrait
     }
 }
 
-trait C extends A implements B
+trait C
 {
     function someOtherTestFunction()
     {
@@ -86,7 +92,9 @@ class ImplementingClass
 
 class ShortImplementingClass
 {
-    use testTrait { A::testFunction insteadof C; }
+    use testTrait {
+        A::testFunction insteadof C;
+    }
 }
 
 class Partial
@@ -107,4 +115,5 @@ trait EmptyTraitWithComment
     /* Comment */
 }
 
+================================================================================
 `;

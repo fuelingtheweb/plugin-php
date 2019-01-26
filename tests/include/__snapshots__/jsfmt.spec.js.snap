@@ -1,6 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`include.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 namespace \\test\\testing;
 
@@ -36,7 +41,8 @@ include Kohana::find_file('views', 'admin/system/errors');
 include((("test.php")));
 include('foo.php') . ' MORE OUTPUT';
 include 'foo.php' . ' MORE OUTPUT';
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=====================================output=====================================
 <?php
 namespace \\test\\testing;
 
@@ -67,19 +73,27 @@ require_once "other/other.php";
 
 include 'http://www.example.com/file.php?foo=1&bar=2';
 include $filename;
-(isset($_GET['p']) && $_GET['p'] === 'home') ? include 'pages/home.php' : '';
+isset($_GET['p']) && $_GET['p'] === 'home' ? include 'pages/home.php' : '';
 include Kohana::find_file('views', 'admin/system/errors');
 include "test.php";
-include ('foo.php') . ' MORE OUTPUT';
+include 'foo.php' . ' MORE OUTPUT';
 include 'foo.php' . ' MORE OUTPUT';
 
+================================================================================
 `;
 
 exports[`single.php 1`] = `
-<?php
-include "test.php";
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
 <?php
 include "test.php";
 
+=====================================output=====================================
+<?php
+include "test.php";
+
+================================================================================
 `;

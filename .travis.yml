@@ -3,12 +3,15 @@ language: node_js
 node_js:
   - 6
   - 8
-  - 9
+  - 10
+  - 11
 cache:
   yarn: true
   directories:
-  - node_modules
+    - node_modules
 install:
-  - yarn install
+  # TODO: Temporary solution after resolve https://github.com/salesforce/tough-cookie/issues/140
+  - yarn install --ignore-engines
 script:
-  - AST_COMPARE=1 yarn test -- --runInBand
+  - AST_COMPARE=1 yarn test
+  - yarn codecov

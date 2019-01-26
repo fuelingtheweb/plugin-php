@@ -12,20 +12,26 @@
 <h2 align="center">Prettier PHP Plugin</h2>
 
 <p align="center">
-  <a href="https://gitter.im/jlongster/prettier">
-    <img alt="Gitter" src="https://img.shields.io/gitter/room/jlongster/prettier.svg?style=flat-square">
+  <a href="https://travis-ci.org/prettier/plugin-php/">
+    <img alt="Travis" src="https://img.shields.io/travis/prettier/plugin-php/master.svg?style=flat-square&label=Travis+CI">
   </a>
-  <a href="https://travis-ci.org/prettier/prettier-php">
-    <img alt="Travis" src="https://img.shields.io/travis/prettier/prettier-php/master.svg?style=flat-square">
+  <a href="https://ci.appveyor.com/project/prettier/plugin-php">
+    <img alt="AppVeyor Build Status" src="https://img.shields.io/appveyor/ci/prettier/plugin-php.svg?style=flat-square&label=AppVeyor">
   </a>
   <a href="https://www.npmjs.com/package/@prettier/plugin-php">
     <img alt="npm version" src="https://img.shields.io/npm/v/@prettier/plugin-php.svg?style=flat-square">
+  </a>
+  <a href="https://codecov.io/gh/prettier/plugin-php">
+    <img alt="Codecov Coverage Status" src="https://img.shields.io/codecov/c/github/prettier/plugin-php.svg?style=flat-square">
   </a>
   <!-- <a href="https://www.npmjs.com/package/@prettier/plugin-php">
     <img alt="monthly downloads" src="https://img.shields.io/npm/dm/@prettier/plugin-php.svg?style=flat-square">
   </a> -->
   <a href="#badge">
     <img alt="code style: prettier" src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square">
+  </a>
+  <a href="https://gitter.im/jlongster/prettier">
+    <img alt="Gitter" src="https://img.shields.io/gitter/room/jlongster/prettier.svg?style=flat-square">
   </a>
   <a href="https://twitter.com/PrettierCode">
     <img alt="Follow+Prettier+on+Twitter" src="https://img.shields.io/twitter/follow/prettiercode.svg?label=follow+prettier&style=flat-square">
@@ -90,8 +96,10 @@ npm install --global prettier @prettier/plugin-php
 If you installed prettier as a local dependency, you can add prettier as a script in your `package.json`,
 
 ```json
-"scripts": {
-  "prettier": "prettier"
+{
+  "scripts": {
+    "prettier": "prettier"
+  }
 }
 ```
 
@@ -109,6 +117,21 @@ If you installed globally, run
 prettier path/to/file.php --write
 ```
 
+## Configuration
+
+Prettier for PHP supports the following options:
+
+| Name            | Default   | Description                                                                                                                                                                                                                                                                                                                |
+| --------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `printWidth`    | `80`      | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#print-width))                                                                                                                                                                                                                            |
+| `tabWidth`      | `4`       | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#tab-width))                                                                                                                                                                                                                              |
+| `useTabs`       | `false`   | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#tabs))                                                                                                                                                                                                                                   |
+| `singleQuote`   | `false`   | If set to `"true"`, strings that use double quotes but do not rely on the features they add, will be reformatted. Example: `"foo" -> 'foo'`, `"foo $bar" -> "foo $bar"`.                                                                                                                                                   |
+| `trailingComma` | `"none"`  | If set to `"all"`, trailing commas will be added wherever possible. <br> If set to `"php7.2"`, trailing commas will be added to multiline arrays, lists and uses. <br> If set to `"php5"`, trailing commas will be added to multiline arrays and lists. <br> if set to `"none"`, no trailing commas.                       |
+| `braceStyle`    | `"psr-2"` | If set to `"psr-2"`, prettier will move open brace for code blocks (classes, functions and methods) onto new line. <br> If set to `"1tbs"`, prettier will move open brace for code blocks (classes, functions and methods) onto same line. |
+| `requirePragma` | `false`   | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#require-pragma))                                                                                                                                                                                                                         |
+| `insertPragma`  | `false`   | Same as in Prettier ([see prettier docs](https://prettier.io/docs/en/options.html#insert-pragma))                                                                                                                                                                                                                          |
+
 ## Editor integration
 
 ### Atom
@@ -122,19 +145,35 @@ Regarding plugin support in the official plugin prettier-vscode see [this issue]
 Alternatively, install [Run on Save](https://marketplace.visualstudio.com/items?itemName=emeraldwalk.RunOnSave) and add the following section to your settings:
 
 ```json
-"emeraldwalk.runonsave": {
-  "commands": [
-    {
-      "match": "\\.php$",
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "\\.php$",
         "cmd": "prettier ${file} --write"
-    }
-  ]
+      }
+    ]
+  }
 }
 ```
 
 ### Vim
 
 Regarding plugin support in the official plugin vim-prettier see [this issue](https://github.com/prettier/vim-prettier/issues/119).
+
+#### ALE
+
+The linting plugin ALE has built-in support for prettier and its plugins. Just add prettier to your [list of fixers](https://github.com/w0rp/ale#2ii-fixing). For example:
+
+```vim
+let g:ale_fixers={
+  \'javascript': ['prettier'],
+  \'json': ['prettier'],
+  \'php': ['prettier'],
+\}
+```
+
+#### Custom
 
 Alternatively, adding the following to `.vimrc` will define a custom command `:PrettierPhp` that runs the plugin while preserving the cursor position and run it on save.
 
@@ -167,13 +206,6 @@ To test it out on a PHP file:
 <table>
   <tbody>
     <tr>
-      <td align="center">
-        <a href="https://github.com/mgrip">
-          <img width="150" height="150" src="https://github.com/mgrip.png?v=3&s=150">
-          </br>
-          Mike Grip
-        </a>
-      </td>
       <td align="center">
         <a href="https://github.com/czosel">
           <img width="150" height="150" src="https://github.com/czosel.png?v=3&s=150">
