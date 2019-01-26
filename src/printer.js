@@ -2068,6 +2068,13 @@ function printNode(path, options, print) {
       const isAnonymousClassNode =
         node.what && node.what.kind === "class" && node.what.isAnonymous;
 
+        if (node.arguments.length < 1) {
+            return concat([
+                "new ",
+                path.call(print, "what")
+            ]);
+        }
+
       // Multiline strings as single arguments
       if (
         !isAnonymousClassNode &&
