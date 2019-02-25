@@ -426,7 +426,6 @@ printWidth: 80
 =====================================output=====================================
 <?php
 
-
 // The first line of a comment
 // The second line of a comment
 
@@ -2484,6 +2483,7 @@ class Net_Sample
  * c-hanging-comment-ender-p: nil
  * End:
  */
+
 ?>
 
 ================================================================================
@@ -3372,8 +3372,7 @@ function foo(
     // Comment
     string $b,
     bool $c // Comment
-)
-{
+) {
 }
 
 function foo()
@@ -5956,6 +5955,25 @@ printWidth: 80
 
 =====================================output=====================================
 <?php
+/**
+ * Product Loop Start
+ *
+ * @author  WooThemes
+ * @package WooCommerce/Templates
+ * @version 2.0.0
+ */
+?>
+
+================================================================================
+`;
+
+exports[`no_code-1.php 1`] = `
+====================================options=====================================
+parsers: ["php"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+<?php
 
 /**
  * Product Loop Start
@@ -5964,7 +5982,18 @@ printWidth: 80
  * @package WooCommerce/Templates
  * @version 2.0.0
  */
+?>
 
+=====================================output=====================================
+<?php
+
+/**
+ * Product Loop Start
+ *
+ * @author  WooThemes
+ * @package WooCommerce/Templates
+ * @version 2.0.0
+ */
 ?>
 
 ================================================================================

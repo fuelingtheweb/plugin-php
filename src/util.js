@@ -539,22 +539,6 @@ function getAlignment(text) {
   return lastLine.length - lastLine.trimLeft().length + 1;
 }
 
-function getFirstNestedChildNode(node) {
-  if (node.children && node.children.length > 0) {
-    return getFirstNestedChildNode(node.children[0]);
-  }
-
-  return node;
-}
-
-function getLastNestedChildNode(node) {
-  if (node.children && node.children.length > 0) {
-    return getFirstNestedChildNode(node.children[node.children.length - 1]);
-  }
-
-  return node;
-}
-
 function getNextNode(path, node) {
   const parent = path.getParentNode();
   const children = getNodeListProperty(parent);
@@ -670,6 +654,39 @@ function getAncestorNode(path, typeOrTypes) {
   return counter === -1 ? null : path.getParentNode(counter);
 }
 
+const magicMethods = [
+  "__construct",
+  "__destruct",
+  "__call",
+  "__callStatic",
+  "__get",
+  "__set",
+  "__isset",
+  "__unset",
+  "__sleep",
+  "__wakeup",
+  "__toString",
+  "__invoke",
+  "__set_state",
+  "__clone",
+  "__debugInfo"
+];
+const MagicMethodsMap = magicMethods.reduce((map, obj) => {
+  map[obj.toLowerCase()] = obj;
+
+  return map;
+}, {});
+
+function normalizeMagicMethodName(name) {
+  const loweredName = name.toLowerCase();
+
+  if (MagicMethodsMap[loweredName]) {
+    return MagicMethodsMap[loweredName];
+  }
+
+  return name;
+}
+
 module.exports = {
   printNumber,
   getPrecedence,
@@ -694,8 +711,6 @@ module.exports = {
   shouldPrintHardLineAfterStartInControlStructure,
   shouldPrintHardLineBeforeEndInControlStructure,
   getAlignment,
-  getFirstNestedChildNode,
-  getLastNestedChildNode,
   isProgramLikeNode,
   isReferenceLikeNode,
   getNodeKindIncludingLogical,
@@ -705,5 +720,6 @@ module.exports = {
   shouldPrintHardlineBeforeTrailingComma,
   isDocNode,
   getAncestorNode,
-  getNextNode
+  getNextNode,
+  normalizeMagicMethodName
 };

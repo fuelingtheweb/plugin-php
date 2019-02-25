@@ -10,15 +10,12 @@ const CURSOR_PLACEHOLDER = "<|>";
 const RANGE_START_PLACEHOLDER = "<<<PRETTIER_RANGE_START>>>";
 const RANGE_END_PLACEHOLDER = "<<<PRETTIER_RANGE_END>>>";
 
-const prettier = require("prettier");
+const { prettier, plugin } = require("./get_engine");
 
 global.run_spec = (dirname, parsers, options) => {
-  options = Object.assign(
-    {
-      plugins: ["."]
-    },
-    options
-  );
+  options = Object.assign({}, options, {
+    plugins: [plugin, ...((options && options.plugins) || [])]
+  });
 
   // istanbul ignore next
   if (!parsers || !parsers.length) {
