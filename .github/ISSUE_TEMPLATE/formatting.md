@@ -18,11 +18,17 @@ BEFORE SUBMITTING AN ISSUE:
     This means we have a very high bar for adding new options.
     Find out more: https://prettier.io/docs/en/option-philosophy.html
 
+Tip! Don't write this stuff manually.
+
+1. Go to https://loilo.github.io/prettier-php-playground/
+2. Paste your code and set options
+3. Press the "Report issue" button in the lower right
+
 -->
 
 **Prettier 1.16.4**
 
-**PHP Plugin 0.10.0**
+**PHP Plugin 0.10.2**
 
 ```sh
 # Options (if any):
