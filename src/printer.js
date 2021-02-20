@@ -2579,6 +2579,10 @@ function printNode(path, options, print) {
           : path.call(print, "value"),
       ]);
     case "unary":
+      if (node.type === '!') {
+        return concat([node.type, ' ', path.call(print, "what")]);
+      }
+
       return concat([node.type, path.call(print, "what")]);
     case "pre":
       return concat([node.type + node.type, path.call(print, "what")]);
