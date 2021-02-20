@@ -44,6 +44,26 @@ foo
 EOD
 , true);
 
+$str = sprintf(sprintf(<<<END
+foo
+END
+, true));
+
+$str = call(array(<<<END
+foo
+END
+, true));
+
+$str = array(array(<<<END
+foo
+END
+, true));
+
+$str = array(call(<<<END
+foo
+END
+, true));
+
 function foo($a = 1, $b = <<<'EOD'
 Example of string
 spanning multiple lines
@@ -901,8 +921,7 @@ string
 string
 string
 EOD
-    ,
-    $var
+    , $var
 );
 
 $array = [
@@ -916,4 +935,44 @@ string
 string
 string
 EOD
+];
+
+$php73FlexibleNowdoc = <<<'EOD'
+       $a
+      b
+     c
+     EOD;
+
+$php73FlexibleNowdoc2 = <<<'EOD'
+      $a
+     b
+    c
+  EOD;
+
+[
+    $var ? "foo" : <<<'EOD'
+string
+EOD
+    , "bar"
+];
+
+[
+    $var ? "foo" : $var2 ? "bar" : <<<'EOD'
+string
+EOD
+    , "bar"
+];
+
+[
+    $var ??  <<<'EOD'
+string
+EOD
+    , "bar"
+];
+
+[
+    $a ?? $b ??  <<<'EOD'
+string
+EOD
+    , "bar"
 ];

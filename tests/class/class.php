@@ -280,3 +280,16 @@ abstract class BaseClass extends MyOtherVeryVeryVeryVeVeryVeryVeryVVeryLongClass
 final class BaseClass extends MyOtherClass implements MyInterface, MyOtherInterface, MyOtherOtherInterface {}
 
 abstract class BaseClass extends MyOtherClass implements MyInterface, MyOtherInterface, MyOtherOtherInterface {}
+
+class User {
+    public int $id;
+    public string $name;
+    public ?string $b = 'foo';
+    private Foo $prop;
+    protected static string $static = 'default';
+
+    public function __construct(int $id, string $name) {
+        $this->id = $id;
+        $this->name = $name;
+    }
+}

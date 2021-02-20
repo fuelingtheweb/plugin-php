@@ -193,14 +193,14 @@ $var =  $bar->foo_{$property};
 =====================================output=====================================
 <?php
 Foo::aStaticMethod();
-$classname = 'Foo';
+$classname = "Foo";
 $classname::aStaticMethod();
 print $classname::$my_static . "\\n";
 Foo::method([
-    'foo' => 'bar',
-    'bar' => 'foo',
-    'foobar' => 'barfoo',
-    'barfoo' => 'foobar'
+    "foo" => "bar",
+    "bar" => "foo",
+    "foobar" => "barfoo",
+    "barfoo" => "foobar",
 ]);
 MyClass::$aStaticProp;
 MyClass::$aStaticProp = 1;
@@ -209,7 +209,7 @@ MyClass::$$b;
 
 class Foo
 {
-    public static $my_static = 'foo';
+    public static $my_static = "foo";
 
     public function staticValue()
     {
@@ -228,7 +228,7 @@ class Bar extends Foo
 abstract class DataRecord
 {
     private static $db; // MySQLi-Connection, same for all subclasses
-    private static $table = array(); // Array of tables for subclasses
+    private static $table = []; // Array of tables for subclasses
 
     public static function init($classname, $table, $db = false)
     {
@@ -314,7 +314,7 @@ class Foo
     }
 }
 
-$var = $this->modelClass::where('name', 'like', strtoupper("%\${key}%"))->get();
+$var = $this->modelClass::where("name", "like", strtoupper("%\${key}%"))->get();
 
 MyVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongClass::class;
 
@@ -349,14 +349,14 @@ $var = $var[0][1]::foo;
 $var = $var[0][1]::foo;
 $var = $var[0][1]::foo;
 $var = (new Foo())::bar;
-$var = Foo::$bar['baz']();
-$var = Foo::$bar['baz']();
-$var = Foo::{$bar['baz']}();
-$var = Foo::$bar['baz']();
+$var = Foo::$bar["baz"]();
+$var = Foo::$bar["baz"]();
+$var = Foo::{$bar["baz"]}();
+$var = Foo::$bar["baz"]();
 
 get_class($this->resource)::$wrap;
 
-$var = Foo::$bar['baz']();
+$var = Foo::$bar["baz"]();
 
 $var = get_class($var)::property;
 $var = get_class($var)::$property;
@@ -368,7 +368,7 @@ $var = get_class($var)::$$$$$property;
 $var = $bar->{$property->foo};
 // TODO https://github.com/glayzzle/php-parser/issues/254
 // $var = $bar->\${$property};
-$var = $bar->foo_{$property};
+$var = $bar->foo_[$property];
 
 ================================================================================
 `;

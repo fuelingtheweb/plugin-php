@@ -3,8 +3,37 @@
 const {
   hasNewline,
   skipEverythingButNewLine,
-  skipNewline
+  skipNewline,
+  isNextLineEmpty: _isNextLineEmpty,
+  isPreviousLineEmpty: _isPreviousLineEmpty,
+  getNextNonSpaceNonCommentCharacterIndex: _getNextNonSpaceNonCommentCharacterIndex,
 } = require("prettier").util;
+
+const prettierVersion = require("prettier").version;
+
+function lookupIfPrettier2(options, prop) {
+  return parseInt(prettierVersion[0]) > 1 ? options[prop] : options;
+}
+
+function isPreviousLineEmpty(text, node, options) {
+  return _isPreviousLineEmpty(
+    text,
+    node,
+    lookupIfPrettier2(options, "locStart")
+  );
+}
+
+function isNextLineEmpty(text, node, options) {
+  return _isNextLineEmpty(text, node, lookupIfPrettier2(options, "locEnd"));
+}
+
+function getNextNonSpaceNonCommentCharacterIndex(text, node, options) {
+  return _getNextNonSpaceNonCommentCharacterIndex(
+    text,
+    node,
+    lookupIfPrettier2(options, "locEnd")
+  );
+}
 
 function printNumber(rawNumber) {
   return (
@@ -18,8 +47,8 @@ function printNumber(rawNumber) {
       .replace(/^([+-])?\./, "$10.")
       // Remove extraneous trailing decimal zeroes.
       .replace(/(\.\d+?)0+(?=e|$)/, "$1")
-      // Remove trailing dot.
-      .replace(/\.(?=e|$)/, "")
+      // Remove unnecessary .e notation
+      .replace(/\.(?=e)/, "")
   );
 }
 
@@ -42,7 +71,7 @@ const PRECEDENCE = {};
     "|=",
     "^=",
     "<<=",
-    ">>="
+    ">>=",
   ],
   ["??"],
   ["||"],
@@ -58,9 +87,9 @@ const PRECEDENCE = {};
   ["!"],
   ["instanceof"],
   ["++", "--", "~"],
-  ["**"]
+  ["**"],
 ].forEach((tier, i) => {
-  tier.forEach(op => {
+  tier.forEach((op) => {
     PRECEDENCE[op] = i;
   });
 });
@@ -139,7 +168,7 @@ function nodeHasStatement(node) {
     "interface",
     "trait",
     "traituse",
-    "declare"
+    "declare",
   ].includes(node.kind);
 }
 
@@ -248,17 +277,19 @@ function isDocNode(node) {
  * Heredoc/Nowdoc nodes need a trailing linebreak if they
  * appear as function arguments or array elements
  */
-function docShouldHaveTrailingNewline(path) {
-  const node = path.getValue();
-  const parent = path.getParentNode();
-  const parentParent = path.getParentNode(1);
+function docShouldHaveTrailingNewline(path, recurse = 0) {
+  const node = path.getNode(recurse);
+  const parent = path.getNode(recurse + 1);
+  const parentParent = path.getNode(recurse + 2);
 
   if (!parent) {
     return false;
   }
 
   if (
-    (parentParent && ["call", "new", "echo"].includes(parentParent.kind)) ||
+    (parentParent &&
+      ["call", "new", "echo"].includes(parentParent.kind) &&
+      !["call", "array"].includes(parent.kind)) ||
     parent.kind === "parameter"
   ) {
     const lastIndex = parentParent.arguments.length - 1;
@@ -288,11 +319,9 @@ function docShouldHaveTrailingNewline(path) {
   }
 
   if (parent.kind === "bin") {
-    if (parentParent && parentParent.kind === "bin") {
-      return true;
-    }
-
-    return parent.left === node;
+    return (
+      parent.left === node || docShouldHaveTrailingNewline(path, recurse + 1)
+    );
   }
 
   if (parent.kind === "case" && parent.test === node) {
@@ -338,6 +367,10 @@ function docShouldHaveTrailingNewline(path) {
     return index !== lastIndex;
   }
 
+  if (parent.kind === "retif") {
+    return docShouldHaveTrailingNewline(path, recurse + 1);
+  }
+
   return false;
 }
 
@@ -365,57 +398,6 @@ function lineShouldEndWithSemicolon(path) {
   if (node.kind === "echo" && node.shortForm) {
     return false;
   }
-  const semiColonWhitelist = [
-    "expressionstatement",
-    "array",
-    "assign",
-    "return",
-    "break",
-    "continue",
-    "call",
-    "pre",
-    "post",
-    "bin",
-    "unary",
-    "yield",
-    "yieldfrom",
-    "echo",
-    "list",
-    "print",
-    "isset",
-    "retif",
-    "unset",
-    "empty",
-    "traitprecedence",
-    "traitalias",
-    "constantstatement",
-    "classconstant",
-    "exit",
-    "global",
-    "static",
-    "include",
-    "goto",
-    "throw",
-    "magic",
-    "new",
-    "eval",
-    "propertylookup",
-    "staticlookup",
-    "offsetlookup",
-    "silent",
-    "usegroup",
-    "property",
-    "string",
-    "boolean",
-    "number",
-    "nowdoc",
-    "encapsed",
-    "variable",
-    "cast",
-    "clone",
-    "do",
-    "constref"
-  ];
   if (node.kind === "traituse") {
     return !node.adaptations;
   }
@@ -428,7 +410,25 @@ function lineShouldEndWithSemicolon(path) {
       return true;
     }
   }
-  return semiColonWhitelist.includes(node.kind);
+  return [
+    "expressionstatement",
+    "do",
+    "usegroup",
+    "classconstant",
+    "propertystatement",
+    "traitprecedence",
+    "traitalias",
+    "goto",
+    "constantstatement",
+    "global",
+    "static",
+    "echo",
+    "unset",
+    "return",
+    "break",
+    "continue",
+    "throw",
+  ].includes(node.kind);
 }
 
 function fileShouldEndWithHardline(path) {
@@ -470,16 +470,16 @@ function maybeStripLeadingSlashFromUse(name) {
 function hasDanglingComments(node) {
   return (
     node.comments &&
-    node.comments.some(comment => !comment.leading && !comment.trailing)
+    node.comments.some((comment) => !comment.leading && !comment.trailing)
   );
 }
 
 function hasLeadingComment(node) {
-  return node.comments && node.comments.some(comment => comment.leading);
+  return node.comments && node.comments.some((comment) => comment.leading);
 }
 
 function hasTrailingComment(node) {
-  return node.comments && node.comments.some(comment => comment.trailing);
+  return node.comments && node.comments.some((comment) => comment.trailing);
 }
 
 function isLookupNode(node) {
@@ -562,10 +562,10 @@ function isProgramLikeNode(node) {
 
 function isReferenceLikeNode(node) {
   return [
-    "classreference",
+    "name",
     "parentreference",
     "selfreference",
-    "staticreference"
+    "staticreference",
   ].includes(node.kind);
 }
 
@@ -580,24 +580,25 @@ function getNodeKindIncludingLogical(node) {
 }
 
 /**
- * Check if string can safely be converted from double to single quotes, i.e.
+ * Check if string can safely be converted from double to single quotes and vice-versa, i.e.
  *
  * - no embedded variables ("foo $bar")
  * - no linebreaks
  * - no special characters like \n, \t, ...
  * - no octal/hex/unicode characters
  *
- * See http://php.net/manual/en/language.types.string.php#language.types.string.syntax.double
+ * See https://php.net/manual/en/language.types.string.php#language.types.string.syntax.double
  */
-function useSingleQuote(node, options) {
-  return (
-    !node.isDoubleQuote ||
-    (options.singleQuote &&
-      !node.raw.match(/\\n|\\t|\\r|\\t|\\v|\\e|\\f/) &&
-      !node.value.match(
-        /["'$\n]|\\[0-7]{1,3}|\\x[0-9A-Fa-f]{1,2}|\\u{[0-9A-Fa-f]+}/
-      ))
-  );
+function useDoubleQuote(node, options) {
+  if (node.isDoubleQuote === options.singleQuote) {
+    // We have a double quote and the user passed singleQuote:true, or the other way around.
+    const rawValue = node.raw.slice(node.raw[0] === "b" ? 2 : 1, -1);
+    const isComplex = rawValue.match(
+      /\\([$nrtfve]|[xX][0-9a-fA-F]{1,2}|[0-7]{1,3}|u{([0-9a-fA-F]+)})|\r?\n|'|"|\$/
+    );
+    return node.isDoubleQuote ? isComplex : !isComplex;
+  }
+  return node.isDoubleQuote;
 }
 
 function hasEmptyBody(path, name = "body") {
@@ -669,7 +670,7 @@ const magicMethods = [
   "__invoke",
   "__set_state",
   "__clone",
-  "__debugInfo"
+  "__debugInfo",
 ];
 const MagicMethodsMap = magicMethods.reduce((map, obj) => {
   map[obj.toLowerCase()] = obj;
@@ -714,12 +715,15 @@ module.exports = {
   isProgramLikeNode,
   isReferenceLikeNode,
   getNodeKindIncludingLogical,
-  useSingleQuote,
+  useDoubleQuote,
   hasEmptyBody,
   isNextLineEmptyAfterNamespace,
   shouldPrintHardlineBeforeTrailingComma,
   isDocNode,
   getAncestorNode,
   getNextNode,
-  normalizeMagicMethodName
+  normalizeMagicMethodName,
+  isPreviousLineEmpty,
+  isNextLineEmpty,
+  getNextNonSpaceNonCommentCharacterIndex,
 };

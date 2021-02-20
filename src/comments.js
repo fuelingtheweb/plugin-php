@@ -4,12 +4,9 @@ const {
   addLeadingComment,
   addDanglingComment,
   addTrailingComment,
-  getNextNonSpaceNonCommentCharacterIndex,
-  isNextLineEmpty,
   skipNewline,
-  isPreviousLineEmpty,
   hasNewline,
-  hasNewlineInRange
+  hasNewlineInRange,
 } = require("prettier").util;
 const {
   concat,
@@ -18,9 +15,14 @@ const {
   hardline,
   cursor,
   lineSuffix,
-  breakParent
+  breakParent,
 } = require("prettier").doc.builders;
-const { isLookupNode } = require("./util");
+const {
+  getNextNonSpaceNonCommentCharacterIndex,
+  isNextLineEmpty,
+  isPreviousLineEmpty,
+  isLookupNode,
+} = require("./util");
 
 /*
 Comment functions are meant to inspect various edge cases using given comment nodes,
@@ -69,7 +71,13 @@ function handleOwnLineComment(comment, text, options) {
     ) ||
     handleTryComments(enclosingNode, followingNode, comment) ||
     handleClassComments(enclosingNode, followingNode, comment) ||
-    handleFunctionParameter(text, enclosingNode, comment, options) ||
+    handleFunctionParameter(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment
+    ) ||
     handleFunction(text, enclosingNode, followingNode, comment, options) ||
     handleForComments(enclosingNode, precedingNode, followingNode, comment) ||
     handleInlineComments(
@@ -135,12 +143,17 @@ function handleEndOfLineComment(comment, text, options) {
     ) ||
     handleTryComments(enclosingNode, followingNode, comment) ||
     handleClassComments(enclosingNode, followingNode, comment) ||
-    handleFunctionParameter(text, enclosingNode, comment, options) ||
+    handleFunctionParameter(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment
+    ) ||
     handleFunction(text, enclosingNode, followingNode, comment, options) ||
     handleEntryComments(enclosingNode, comment) ||
     handleCallComments(precedingNode, enclosingNode, comment) ||
-    handlePropertyComments(enclosingNode, comment) ||
-    handleVariableComments(enclosingNode, followingNode, comment) ||
+    handleAssignComments(enclosingNode, followingNode, comment) ||
     handleInlineComments(
       enclosingNode,
       precedingNode,
@@ -185,7 +198,13 @@ function handleRemainingComment(comment, text, options) {
     handleCommentInEmptyParens(text, enclosingNode, comment, options) ||
     handleClassComments(enclosingNode, followingNode, comment) ||
     handleTraitUseComments(enclosingNode, followingNode, comment) ||
-    handleFunctionParameter(text, enclosingNode, comment, options) ||
+    handleFunctionParameter(
+      text,
+      precedingNode,
+      enclosingNode,
+      followingNode,
+      comment
+    ) ||
     handleFunction(text, enclosingNode, followingNode, comment, options) ||
     handleGoto(enclosingNode, comment) ||
     handleHalt(precedingNode, enclosingNode, followingNode, comment) ||
@@ -444,7 +463,7 @@ function handleClassComments(enclosingNode, followingNode, comment) {
         }
       } else {
         if (
-          enclosingNode.extends.some(extendsNode => {
+          enclosingNode.extends.some((extendsNode) => {
             if (followingNode && followingNode === extendsNode) {
               addDanglingComment(followingNode, comment);
               return true;
@@ -460,7 +479,7 @@ function handleClassComments(enclosingNode, followingNode, comment) {
     // them as dangling comments and handle them in the printer
     if (followingNode && enclosingNode.implements) {
       if (
-        enclosingNode.implements.some(implementsNode => {
+        enclosingNode.implements.some((implementsNode) => {
           if (followingNode && followingNode === implementsNode) {
             addDanglingComment(followingNode, comment);
             return true;
@@ -477,6 +496,16 @@ function handleClassComments(enclosingNode, followingNode, comment) {
       addDanglingComment(enclosingNode, comment);
       return true;
     }
+  }
+
+  if (
+    followingNode &&
+    followingNode.kind === "class" &&
+    followingNode.isAnonymous &&
+    followingNode.leadingComments &&
+    comment.kind === "commentblock"
+  ) {
+    return true;
   }
   return false;
 }
@@ -526,24 +555,24 @@ function handleFunction(text, enclosingNode, followingNode, comment, options) {
   return false;
 }
 
-function handleFunctionParameter(text, enclosingNode, comment, options) {
+function handleFunctionParameter(
+  text,
+  precedingNode,
+  enclosingNode,
+  followingNode,
+  comment
+) {
   if (
     !enclosingNode ||
     !["function", "method", "parameter"].includes(enclosingNode.kind)
   ) {
     return false;
   }
-  // for function parameters that are assignments, we have no node to assign comments
-  // that fall in between the var being assigned and the "=" character. To get around this,
-  // we'll store any comments falling here as dangling comments on the parameter node,
-  // and let the printer handle them accordingly
-  const nextCharIndex = getNextNonSpaceNonCommentCharacterIndex(
-    text,
-    comment,
-    options
-  );
-  if (text.charAt(nextCharIndex) + text.charAt(nextCharIndex + 1) === "= ") {
-    addDanglingComment(enclosingNode, comment);
+  if (
+    precedingNode.kind === "typereference" &&
+    followingNode.kind === "identifier"
+  ) {
+    addTrailingComment(precedingNode, comment);
     return true;
   }
   return false;
@@ -647,18 +676,17 @@ function handleEntryComments(enclosingNode, comment) {
   return false;
 }
 
-function handleVariableComments(enclosingNode, followingNode, comment) {
-  if (
-    enclosingNode &&
-    enclosingNode.kind === "assign" &&
-    followingNode &&
-    (followingNode.kind === "array" ||
-      followingNode.kind === "string" ||
-      followingNode.kind === "encapsed")
-  ) {
-    addLeadingComment(followingNode, comment);
-    return true;
+function handleAssignComments(enclosingNode, followingNode, comment) {
+  if (enclosingNode && enclosingNode.kind === "assign" && followingNode) {
+    const equalSignOffset =
+      enclosingNode.loc.start.offset + enclosingNode.loc.source.indexOf("=");
+
+    if (comment.loc.start.offset > equalSignOffset) {
+      addLeadingComment(followingNode, comment);
+      return true;
+    }
   }
+
   return false;
 }
 
@@ -682,18 +710,6 @@ function handleTryComments(enclosingNode, followingNode, comment) {
     return true;
   }
 
-  return false;
-}
-
-function handlePropertyComments(enclosingNode, comment) {
-  if (
-    enclosingNode &&
-    (enclosingNode.kind === "property" ||
-      enclosingNode.kind === "classconstant")
-  ) {
-    addLeadingComment(enclosingNode, comment);
-    return true;
-  }
   return false;
 }
 
@@ -746,6 +762,10 @@ function handleDeclareComments(
   comment
 ) {
   if (!enclosingNode || enclosingNode.kind !== "declare") {
+    return false;
+  }
+
+  if (precedingNode && precedingNode.kind === "noop") {
     return false;
   }
 
@@ -821,7 +841,7 @@ function printDanglingComments(path, options, sameIndent, filter) {
     return "";
   }
 
-  path.each(commentPath => {
+  path.each((commentPath) => {
     const comment = commentPath.getValue();
     if (
       comment &&
@@ -844,18 +864,18 @@ function printDanglingComments(path, options, sameIndent, filter) {
 }
 
 function hasLeadingComment(node) {
-  return node.comments && node.comments.some(comment => comment.leading);
+  return node.comments && node.comments.some((comment) => comment.leading);
 }
 
 function hasTrailingComment(node) {
-  return node.comments && node.comments.some(comment => comment.trailing);
+  return node.comments && node.comments.some((comment) => comment.trailing);
 }
 
 function hasLeadingOwnLineComment(text, node, options) {
   return (
     node.comments &&
     node.comments.some(
-      comment => comment.leading && hasNewline(text, options.locEnd(comment))
+      (comment) => comment.leading && hasNewline(text, options.locEnd(comment))
     )
   );
 }
@@ -864,11 +884,14 @@ function printComments(comments, options) {
   const parts = [];
   comments.forEach((comment, index, comments) => {
     comment.printed = true;
+    const isLastComment = comments.length === index + 1;
     parts.push(comment.value);
-    parts.push(hardline);
+    if (!isLastComment) {
+      parts.push(hardline);
+    }
     if (
       isNextLineEmpty(options.originalText, comment, options) &&
-      comments.length > index + 1
+      !isLastComment
     ) {
       parts.push(hardline);
     }
@@ -885,10 +908,10 @@ function getCommentChildNodes(node) {
     return [];
   }
 
-  const getChildNodes = node =>
+  const getChildNodes = (node) =>
     Object.keys(node)
       .filter(
-        n =>
+        (n) =>
           n !== "kind" &&
           n !== "loc" &&
           n !== "errors" &&
@@ -899,7 +922,7 @@ function getCommentChildNodes(node) {
           n !== "precedingNode" &&
           n !== "followingNode"
       )
-      .map(n => node[n]);
+      .map((n) => node[n]);
 
   return getChildNodes(node);
 }
@@ -936,7 +959,9 @@ function printLeadingComment(commentPath, print, options) {
   if (isBlock) {
     return concat([
       contents,
-      hasNewline(options.originalText, options.locEnd(comment)) ? hardline : " "
+      hasNewline(options.originalText, options.locEnd(comment))
+        ? hardline
+        : " ",
     ]);
   }
 
@@ -954,7 +979,7 @@ function printTrailingComment(commentPath, print, options) {
 
   if (
     hasNewline(options.originalText, options.locStart(comment), {
-      backwards: true
+      backwards: true,
     })
   ) {
     // This allows comments at the end of nested structures:
@@ -985,7 +1010,7 @@ function printTrailingComment(commentPath, print, options) {
 
   return concat([
     lineSuffix(concat([" ", contents])),
-    !isBlock ? breakParent : ""
+    !isBlock ? breakParent : "",
   ]);
 }
 
@@ -1001,7 +1026,7 @@ function printAllComments(path, print, options, needsSemi) {
   const leadingParts = [];
   const trailingParts = [needsSemi ? ";" : "", printed];
 
-  path.each(commentPath => {
+  path.each((commentPath) => {
     const comment = commentPath.getValue();
     const { leading, trailing } = comment;
 
@@ -1040,5 +1065,5 @@ module.exports = {
   hasTrailingComment,
   hasLeadingOwnLineComment,
   printComments,
-  printAllComments
+  printAllComments,
 };
