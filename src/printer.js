@@ -633,7 +633,7 @@ function printArgumentsList(path, options, print, argumentsKey = "arguments") {
             lastArg && shouldPrintHardlineBeforeTrailingComma(lastArg)
               ? hardline
               : "",
-            ",",
+            "",
           ])
         )
       : "";
